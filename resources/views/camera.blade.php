@@ -75,6 +75,11 @@
                     <button data-timer="10" class="timer-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">10s</button>
                 </div>
             </div>
+            <div>
+                <p class="font-bold text-sm mb-3">Mirror</p>
+                <button id="mirrorToggle" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-semibold hover:border-brand-orange">Mirror: OFF — preview normal</button>
+                <p class="text-xs text-brand-muted mt-1">Aktifkan jika preview masih terbalik.</p>
+            </div>
             <div class="bg-brand-card-light rounded-2xl p-4 text-xs text-brand-muted">
                 <p><span class="font-bold text-brand-text" id="visitorLabel">Pengunjung: -</span></p>
                 <p id="progressLabel" class="mt-1">0 / 4 foto terisi</p>
@@ -84,7 +89,7 @@
         {{-- Tengah: Live Camera --}}
         <div class="bg-white rounded-3xl p-6 shadow-sm">
             <div class="relative rounded-2xl overflow-hidden bg-brand-dark aspect-[4/3]">
-                <video id="webcam" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                <video id="webcam" autoplay playsinline muted class="w-full h-full object-cover" style="transform: none;"></video>
                 <div id="countdownOverlay" class="absolute inset-0 hidden items-center justify-center bg-black/50 text-white font-serif font-extrabold text-8xl">3</div>
                 <p id="cameraHint" class="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/80 text-xs bg-black/40 rounded-full px-4 py-1">Kamera belum aktif — isi biodata dulu</p>
             </div>
@@ -156,12 +161,26 @@
         layout: '2x2',
         filter: 'none',
         timer: 3,
+        mirror: true, // default ON agar preview front-camera tidak mirror (teks tidak kebalik); klik toggle untuk balik
         templateId: null, // id desain terpilih, null = Polos
         builtin: 'plain', // 'plain' | 'receipt' (tema bawaan tanpa upload)
         shots: [], // array of dataURL (filtered capture)
         stream: null,
         busy: false,
     };
+
+    function applyMirror() {
+        video.style.transform = state.mirror ? 'scaleX(-1)' : 'none';
+        const btn = document.getElementById('mirrorToggle');
+        if (btn) {
+            const on = state.mirror;
+            btn.textContent = on ? 'Mirror: ON — preview seperti kaca' : 'Mirror: OFF — preview normal';
+            btn.classList.toggle('bg-brand-orange', on);
+            btn.classList.toggle('text-white', on);
+            btn.classList.toggle('border-brand-orange', on);
+            btn.classList.toggle('border-gray-300', !on);
+        }
+    }
 
     // Preload frame overlay & background agar preview langsung tampil saat desain dipilih
     const frameCache = {};
@@ -274,6 +293,11 @@
         state.timer = parseInt(b.dataset.timer, 10);
         setActive('.timer-btn', b);
     }));
+    document.getElementById('mirrorToggle')?.addEventListener('click', () => {
+        state.mirror = !state.mirror;
+        applyMirror();
+    });
+    applyMirror();
 
     // Restore biodata dari session (biar refresh tidak isi ulang)
     try {
@@ -341,7 +365,11 @@
         captureCanvas.height = h;
         const ctx = captureCanvas.getContext('2d');
         ctx.filter = state.filter === 'none' ? 'none' : state.filter;
-        // tidak mirror — hasil sesuai aslinya (teks tidak terbalik)
+        if (state.mirror) {
+            // mirror aktif → preview dibalik via CSS, hasil juga dibalik agar WYSIWYG
+            ctx.translate(w, 0);
+            ctx.scale(-1, 1);
+        }
         ctx.drawImage(video, 0, 0, w, h);
         return captureCanvas.toDataURL('image/png');
     }

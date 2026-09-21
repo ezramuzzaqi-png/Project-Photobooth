@@ -13,4 +13,7 @@ COPY . .
 
 RUN composer install --optimize-autoloader --no-dev --no-interaction --no-scripts
 
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+# Railway: buat storage link & cache saat build (tidak butuh DB)
+RUN php artisan storage:link || true
+
+CMD sh -c "php artisan config:clear && php artisan migrate --force && php artisan db:seed --force || true && php artisan storage:link || true && php artisan serve --host=0.0.0.0 --port=\${PORT:-8080}"
