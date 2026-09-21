@@ -659,12 +659,11 @@
     }
 
     function fullResStrip() {
-        // Render ulang resolusi tinggi (1200px) dengan mesin yang sama → file = preview
-        // JPEG 0.85 biar payload < 2MB (PNG 1200px bisa >5MB → gagal di Railway)
+        // 900px + JPEG 0.75 → ~400KB, aman untuk Railway (limit 4MB)
         return Promise.all(state.shots.map(loadShot)).then((imgs) => {
             const cv = document.createElement('canvas');
-            paintStrip(cv, 1200, imgs);
-            return cv.toDataURL('image/jpeg', 0.85);
+            paintStrip(cv, 900, imgs);
+            return cv.toDataURL('image/jpeg', 0.75);
         });
     }
 
@@ -672,11 +671,15 @@
         if (btnNext.disabled || state.busy) return;
         state.busy = true;
         btnNext.textContent = 'Menyimpan...';
+        errBox.classList.add('hidden');
         try {
             const image = await fullResStrip();
+            console.log('strip size', Math.round(image.length/1024), 'KB');
+            if (image.length > 4 * 1024 * 1024) throw new Error('Gambar kebesaran, coba retake dengan kualitas lebih kecil.');
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const res = await fetch("{{ route('photo.save') }}", {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
                 body: JSON.stringify({
                     visitor_name: state.visitor.name,
@@ -686,11 +689,14 @@
                     image: image,
                 }),
             });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Gagal menyimpan foto.');
+            const text = await res.text();
+            let data;
+            try { data = JSON.parse(text); } catch { throw new Error('Server error ('+res.status+'): '+text.slice(0,300)); }
+            if (!res.ok) throw new Error(data.message || 'Gagal menyimpan ('+res.status+')');
             window.location.href = data.redirect;
         } catch (e) {
-            errBox.textContent = e.message;
+            console.error(e);
+            errBox.textContent = e.message.includes('Failed to fetch') ? 'Gagal terhubung ke server. Cek koneksi / coba lagi. Detail: '+e.message : e.message;
             errBox.classList.remove('hidden');
             state.busy = false;
             btnNext.textContent = 'Selanjutnya → Gabung & Simpan';
