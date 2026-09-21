@@ -60,6 +60,10 @@ class PhotoboothController extends Controller
 
         $extension = str_contains($meta, 'image/jpeg') ? 'jpg' : 'png';
         $filename = 'strips/' . now()->format('Ymd_His') . '_' . uniqid() . '.' . $extension;
+        // Batas upload Railway/nginx default 2-8MB — tolak yang kebesaran dengan pesan jelas
+        if (strlen($binary) > 8 * 1024 * 1024) {
+            return response()->json(['message' => 'Gambar terlalu besar (>8MB). Coba lagi.'], 413);
+        }
 
         Storage::disk('public')->put($filename, $binary);
 

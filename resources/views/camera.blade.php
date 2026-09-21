@@ -660,10 +660,11 @@
 
     function fullResStrip() {
         // Render ulang resolusi tinggi (1200px) dengan mesin yang sama → file = preview
+        // JPEG 0.85 biar payload < 2MB (PNG 1200px bisa >5MB → gagal di Railway)
         return Promise.all(state.shots.map(loadShot)).then((imgs) => {
             const cv = document.createElement('canvas');
             paintStrip(cv, 1200, imgs);
-            return cv.toDataURL('image/png');
+            return cv.toDataURL('image/jpeg', 0.85);
         });
     }
 
