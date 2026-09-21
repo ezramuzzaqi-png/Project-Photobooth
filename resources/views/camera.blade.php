@@ -341,9 +341,7 @@
         captureCanvas.height = h;
         const ctx = captureCanvas.getContext('2d');
         ctx.filter = state.filter === 'none' ? 'none' : state.filter;
-        // mirror effect seperti photobooth
-        ctx.translate(w, 0);
-        ctx.scale(-1, 1);
+        // tidak mirror — hasil sesuai aslinya (teks tidak terbalik)
         ctx.drawImage(video, 0, 0, w, h);
         return captureCanvas.toDataURL('image/png');
     }
