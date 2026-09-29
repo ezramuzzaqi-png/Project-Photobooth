@@ -14,6 +14,11 @@ class Template extends Model
         'layout_type',
         'frame_image',
         'background_image',
+        'slots',
+    ];
+
+    protected $casts = [
+        'slots' => 'array',
     ];
 
     public function photos()

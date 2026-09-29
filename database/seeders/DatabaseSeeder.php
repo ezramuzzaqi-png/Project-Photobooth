@@ -31,5 +31,7 @@ class DatabaseSeeder extends Seeder
         foreach ($defaults as $row) {
             Template::firstOrCreate(['name' => $row['name']], $row);
         }
+
+        $this->call(FrameTemplateSeeder::class);
     }
 }

@@ -13,10 +13,16 @@ class PhotoboothController extends Controller
 {
     public function camera(): View
     {
-        // Hanya desain yang layout-nya didukung halaman camera (2x2 / 2x3 / receipt)
-        $templates = Template::whereIn('layout_type', ['2x2', '2x3', 'receipt'])
-            ->orderBy('name')
-            ->get();
+        // Mode demo: kalau DB mati, halaman tetap kebuka dengan desain kosong
+        // biar siswa bisa belajar WebRTC/Canvas tanpa 500 error.
+        try {
+            // Hanya desain yang layout-nya didukung halaman camera (2x2 / 2x3 / receipt)
+            $templates = Template::whereIn('layout_type', ['2x2', '2x3', 'receipt'])
+                ->orderBy('name')
+                ->get();
+        } catch (\Throwable $e) {
+            $templates = collect();
+        }
 
         // Payload JSON untuk pemilih desain di JS (dibuat di controller
         // agar Blade tidak perlu parsing ekspresi kompleks di @json)
@@ -26,6 +32,7 @@ class PhotoboothController extends Controller
             'layout_type' => $t->layout_type,
             'frame_url' => $t->frame_image ? asset('storage/' . $t->frame_image) : null,
             'background_url' => $t->background_image ? asset('storage/' . $t->background_image) : null,
+            'slots' => $t->slots,
         ])->values();
 
         return view('camera', compact('templates', 'designs'));

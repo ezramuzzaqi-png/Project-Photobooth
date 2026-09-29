@@ -60,11 +60,20 @@
             </div>
             <div>
                 <p class="font-bold text-sm mb-3">Filter Kamera</p>
-                <div class="grid grid-cols-2 gap-2" id="filterPicker">
+                <div class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1" id="filterPicker">
                     <button data-filter="none" class="filter-btn border border-brand-orange bg-brand-orange text-white rounded-xl px-2 py-2 text-sm font-semibold">Normal</button>
                     <button data-filter="grayscale(1)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">B&W</button>
-                    <button data-filter="sepia(0.8)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Vintage</button>
+                    <button data-filter="grayscale(1) contrast(1.5) brightness(0.9)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Noir</button>
+                    <button data-filter="sepia(0.8) contrast(1.1) brightness(0.95)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Vintage</button>
+                    <button data-filter="sepia(1)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Sepia</button>
                     <button data-filter="sepia(0.35) saturate(1.6) contrast(1.05)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Warm</button>
+                    <button data-filter="sepia(0.55) saturate(2.2) hue-rotate(-25deg)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Sunset</button>
+                    <button data-filter="saturate(1.8) contrast(1.2)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Vivid</button>
+                    <button data-filter="sepia(0.35) hue-rotate(170deg) saturate(1.8)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Cool</button>
+                    <button data-filter="brightness(0.8) contrast(1.3) saturate(0.85)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Moody</button>
+                    <button data-filter="brightness(1.3) contrast(1.02)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Bright</button>
+                    <button data-filter="sepia(0.3) contrast(0.85) brightness(1.12) saturate(0.8)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Faded</button>
+                    <button data-filter="invert(1)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Negatif</button>
                 </div>
             </div>
             <div>
@@ -88,7 +97,13 @@
 
         {{-- Tengah: Live Camera --}}
         <div class="bg-white rounded-3xl p-6 shadow-sm">
-            <div class="relative rounded-2xl overflow-hidden bg-brand-dark aspect-[4/3]">
+            <style>
+                #cameraBox:fullscreen { aspect-ratio: auto !important; width: 100%; height: 100%; border-radius: 0; background: #1C1C1C; }
+                #cameraBox:fullscreen #webcam { width: 100%; height: 100%; }
+                #cameraBox:fullscreen #countdownOverlay { font-size: 12rem; }
+                #cameraBox:fullscreen #cameraHint { font-size: 1rem; }
+            </style>
+            <div id="cameraBox" class="relative rounded-2xl overflow-hidden bg-brand-dark aspect-[4/3]">
                 <video id="webcam" autoplay playsinline muted class="w-full h-full object-cover" style="transform: none;"></video>
                 <div id="countdownOverlay" class="absolute inset-0 hidden items-center justify-center bg-black/50 text-white font-serif font-extrabold text-8xl">3</div>
                 <p id="cameraHint" class="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/80 text-xs bg-black/40 rounded-full px-4 py-1">Kamera belum aktif — isi biodata dulu</p>
@@ -96,9 +111,11 @@
             <canvas id="captureCanvas" class="hidden"></canvas>
             <div class="mt-4 flex flex-wrap gap-3">
                 <button id="btnCapture" disabled class="bg-brand-orange disabled:opacity-40 text-white rounded-full px-8 py-3 font-semibold hover:bg-brand-orange-hover transition">Jepret Foto</button>
+                <button id="btnFullscreen" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition">⛶ Fullscreen Kamera</button>
                 <button id="btnRetakeOne" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition">↺ Retake terakhir</button>
                 <button id="btnRetakeAll" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition">⟲ Ulangi semua</button>
             </div>
+            <p class="mt-2 text-xs text-brand-muted">Mode fullscreen: tekan <kbd class="font-bold">Enter</kbd> untuk jepret, <kbd class="font-bold">Esc</kbd> untuk keluar.</p>
             <p id="captureError" class="hidden mt-3 text-sm text-red-600"></p>
         </div>
 
@@ -210,7 +227,22 @@
         'receipt': { cols: 2, rows: 2, total: 4 }, // 2 strip kembar, tiap strip 1 kolom × 2 foto
     };
 
-    function requiredTotal() { return LAYOUTS[state.layout].total; }
+    // Template ber-frame terukur: foto mengikuti lubang transparan frame
+    // (hasil ukur piksel, dikirim controller sebagai tpl.slots), bukan grid baku.
+    // Syarat: jumlah lubang harus sama dengan total slot layout aktif.
+    function slottedTemplate() {
+        const tpl = selectedTemplate();
+        if (!tpl || !tpl.slots || !Array.isArray(tpl.slots.holes)) return null;
+        if (!tpl.slots.fw || !tpl.slots.fh) return null;
+        if (!LAYOUTS[state.layout]) return null;
+        if (tpl.slots.holes.length !== LAYOUTS[state.layout].total) return null;
+        return tpl.slots;
+    }
+
+    function requiredTotal() {
+        const s = slottedTemplate();
+        return s ? s.holes.length : LAYOUTS[state.layout].total;
+    }
 
     function setActive(selector, btn) {
         document.querySelectorAll(selector).forEach(b => {
@@ -374,7 +406,7 @@
         return captureCanvas.toDataURL('image/png');
     }
 
-    btnCapture.addEventListener('click', async () => {
+    async function startCapture() {
         if (state.busy || !state.stream) return;
         if (state.shots.length >= requiredTotal()) return;
         state.busy = true;
@@ -389,6 +421,43 @@
         }
         state.busy = false;
         btnCapture.disabled = state.shots.length >= requiredTotal();
+    }
+
+    btnCapture.addEventListener('click', startCapture);
+
+    // Mode fullscreen: tombol toggle + Enter = jepret (Esc keluar otomatis oleh browser)
+    const cameraBox = document.getElementById('cameraBox');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+    function syncFullscreenLabel() {
+        const on = !!document.fullscreenElement;
+        if (btnFullscreen) btnFullscreen.textContent = on ? '⛶ Keluar Fullscreen (Esc)' : '⛶ Fullscreen Kamera';
+    }
+    btnFullscreen?.addEventListener('click', async () => {
+        errBox.classList.add('hidden');
+        try {
+            if (document.fullscreenElement) {
+                await document.exitFullscreen();
+            } else {
+                const req = cameraBox.requestFullscreen || cameraBox.webkitRequestFullscreen;
+                if (!req) throw new Error('browser tidak mendukung Fullscreen API.');
+                await req.call(cameraBox);
+            }
+        } catch (e) {
+            errBox.textContent = 'Gagal masuk fullscreen: ' + e.message;
+            errBox.classList.remove('hidden');
+        }
+    });
+    document.addEventListener('fullscreenchange', syncFullscreenLabel);
+    syncFullscreenLabel();
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        if (!document.fullscreenElement) return; // Enter hanya jadi shutter dalam mode fullscreen
+        const tag = (e.target && e.target.tagName) || '';
+        if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) return;
+        if (!modal.classList.contains('hidden')) return; // biodata belum diisi
+        e.preventDefault();
+        startCapture();
     });
 
     btnRetakeOne.addEventListener('click', () => {
@@ -442,8 +511,23 @@
 
     function isReceipt() { return state.builtin === 'receipt'; }
 
-    // Geometri strip untuk lebar W (s = skala, preview 600px / simpan 1200px)
+    // Geometri strip untuk lebar W (s = skala, preview 600px / simpan 900px)
     function geomFor(W) {
+        const slots = slottedTemplate();
+        if (slots) {
+            // Kanvas mengikuti rasio asli frame (1200x1800) agar overlay
+            // tidak melar, foto digambar tepat di tiap lubang (diinflasi 3px
+            // agar tepinya terselip di bawah bingkai, tanpa garis celah).
+            const k = W / slots.fw;
+            const pad = 3;
+            const holes = slots.holes.map(h => ({
+                x: (h[0] - pad) * k,
+                y: (h[1] - pad) * k,
+                w: (h[2] + pad * 2) * k,
+                h: (h[3] + pad * 2) * k,
+            }));
+            return { slotted: true, s: k, holes, H: slots.fh * k };
+        }
         const s = W / 600;
         if (state.layout === 'receipt') {
             // Dua strip struk kembar kiri-kanan; tiap strip 1 kolom × 2 foto
@@ -631,6 +715,20 @@
         canvas.width = W;
         canvas.height = g.H;
         const ctx = canvas.getContext('2d');
+        if (g.slotted) {
+            // Frame menutupi seluruh kanvas kecuali lubang: isi latar gelap
+            // (untuk slot preview yang masih kosong), gambar tiap foto tepat
+            // di lubangnya, lalu timpa frame overlay di atasnya.
+            ctx.fillStyle = '#1C1C1C';
+            ctx.fillRect(0, 0, W, g.H);
+            imgs.forEach((im, i) => {
+                const hole = g.holes[i];
+                if (!im || !hole) return;
+                drawCover(ctx, im, hole.x, hole.y, hole.w, hole.h, 2 * g.s);
+            });
+            paintFrameOverlay(ctx, W, g.H);
+            return;
+        }
         const bg = state.templateId ? backgroundCache[state.templateId] : null;
         const hasBg = bg && bg.complete && bg.naturalWidth;
         if (hasBg) {

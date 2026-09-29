@@ -15,7 +15,7 @@
             $steps = [
                 ['icon' => '◉', 'title' => 'Buka halaman camera', 'desc' => 'Klik "Try it now!" dari home', 'dark' => false],
                 ['icon' => '▦', 'title' => 'Pilih format strip', 'desc' => '2x2 atau 2x3, lewat panel di sisi kiri', 'dark' => false],
-                ['icon' => '◐', 'title' => 'Pilih filter kamera', 'desc' => 'Normal, B&W, Vintage atau warm', 'dark' => false],
+                ['icon' => '◐', 'title' => 'Pilih filter kamera', 'desc' => '13 pilihan: Normal, B&W, Noir, Vintage, Sepia, Warm, Sunset, Vivid, Cool, Moody, Bright, Faded, Negatif', 'dark' => false],
                 ['icon' => '⧗', 'title' => 'Atur waktu hitung mundur', 'desc' => '3 detik, 5 detik, dan 10 detik', 'dark' => false],
                 ['icon' => '☺', 'title' => 'Jepret foto mu', 'desc' => null, 'dark' => false, 'badges' => ['✓ Klik "Try it now!" dari home', '🔄 Kurang puas? Retake']],
                 ['icon' => '✎', 'title' => 'Pilih tema strip', 'desc' => 'Klik "Next", lalu pilih desain photostrip favoritmu', 'dark' => false],
