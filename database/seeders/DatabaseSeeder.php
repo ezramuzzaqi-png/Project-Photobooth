@@ -33,5 +33,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call(FrameTemplateSeeder::class);
+        $this->call(BackgroundSlotsSeeder::class);
     }
 }

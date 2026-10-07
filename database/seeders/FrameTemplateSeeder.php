@@ -23,14 +23,14 @@ class FrameTemplateSeeder extends Seeder
         $frames = [
             [
                 'name' => 'Photobooth 2x2', 'layout_type' => '2x2', 'file' => 'photobooth-2x2.png',
-                'slots' => ['fw' => 1200, 'fh' => 1800, 'holes' => [
+                'slots' => ['fw' => 1200, 'fh' => 1800, 'radius' => 3, 'holes' => [
                     [40, 192, 539, 540], [620, 192, 539, 540],
                     [40, 772, 539, 540], [620, 772, 539, 540],
                 ]],
             ],
             [
                 'name' => 'Photobooth 2x3', 'layout_type' => '2x3', 'file' => 'photobooth-2x3.png',
-                'slots' => ['fw' => 1200, 'fh' => 1800, 'holes' => [
+                'slots' => ['fw' => 1200, 'fh' => 1800, 'radius' => 3, 'holes' => [
                     [40, 192, 539, 344], [620, 192, 539, 344],
                     [40, 572, 539, 344], [620, 572, 539, 344],
                     [40, 952, 539, 344], [620, 952, 539, 344],
@@ -38,14 +38,14 @@ class FrameTemplateSeeder extends Seeder
             ],
             [
                 'name' => 'Pixel to Reality 2x2', 'layout_type' => '2x2', 'file' => 'pixel-to-reality-2x2.png',
-                'slots' => ['fw' => 1200, 'fh' => 1800, 'holes' => [
+                'slots' => ['fw' => 1200, 'fh' => 1800, 'radius' => 3, 'holes' => [
                     [40, 192, 539, 540], [620, 192, 539, 540],
                     [40, 772, 539, 540], [620, 772, 539, 540],
                 ]],
             ],
             [
                 'name' => 'Pixel to Reality 2x3', 'layout_type' => '2x3', 'file' => 'pixel-to-reality-2x3.png',
-                'slots' => ['fw' => 1200, 'fh' => 1800, 'holes' => [
+                'slots' => ['fw' => 1200, 'fh' => 1800, 'radius' => 3, 'holes' => [
                     [40, 192, 539, 344], [620, 192, 539, 344],
                     [40, 572, 539, 344], [620, 572, 539, 344],
                     [40, 952, 539, 344], [620, 952, 539, 344],
@@ -53,14 +53,14 @@ class FrameTemplateSeeder extends Seeder
             ],
             [
                 'name' => 'RPL Pixel to Reality 2x2', 'layout_type' => '2x2', 'file' => 'rpl-pixel-to-reality-2x2.png',
-                'slots' => ['fw' => 1200, 'fh' => 1800, 'holes' => [
+                'slots' => ['fw' => 1200, 'fh' => 1800, 'radius' => 3, 'holes' => [
                     [40, 232, 539, 500], [620, 232, 539, 500],
                     [40, 812, 539, 500], [620, 812, 539, 500],
                 ]],
             ],
             [
                 'name' => 'RPL Pixel to Reality 2x3', 'layout_type' => '2x3', 'file' => 'rpl-pixel-to-reality-2x3.png',
-                'slots' => ['fw' => 1200, 'fh' => 1800, 'holes' => [
+                'slots' => ['fw' => 1200, 'fh' => 1800, 'radius' => 3, 'holes' => [
                     [40, 232, 539, 304], [620, 232, 539, 304],
                     [40, 612, 539, 304], [620, 612, 539, 304],
                     [40, 992, 539, 304], [620, 992, 539, 304],

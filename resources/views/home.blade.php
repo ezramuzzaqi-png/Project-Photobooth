@@ -14,40 +14,33 @@
             <a href="{{ route('how-it-works') }}" class="border border-brand-text/20 rounded-full px-6 py-3 font-semibold hover:bg-white transition">Cara kerja</a>
         </div>
         <div class="mt-6 flex items-center gap-4 text-sm text-brand-muted">
-            <span>★ 5/5 rating</span>
+            <span>★ {{ $stats['rating'] }} rating</span>
             <span>•</span>
-            <span>99M+ foto diambil</span>
+            <span>{{ number_format($stats['photos'], 0, ',', '.') }}+ foto diambil</span>
         </div>
     </div>
 
-    {{-- Preview Showcase Photostrip --}}
+    {{-- Preview Showcase Photostrip (desain asli dari database) --}}
     <div class="grid grid-cols-3 gap-4">
-        <div class="bg-white rounded-3xl p-3 shadow-xl rotate-[-3deg]">
-            <div class="space-y-2">
-                <div class="rounded-2xl h-28 bg-gradient-to-br from-brand-orange to-amber-200"></div>
-                <div class="rounded-2xl h-28 bg-brand-card-light"></div>
-                <div class="rounded-2xl h-28 bg-brand-dark"></div>
+        @forelse($showcase as $i => $t)
+            @php
+                $img = $t->background_image ?? $t->frame_image;
+                $card = $i % 3 === 0 ? 'bg-white rounded-3xl p-3 shadow-xl rotate-[-3deg]' : ($i % 3 === 1 ? 'bg-brand-dark text-white rounded-3xl p-3 shadow-xl mt-6' : 'bg-white rounded-3xl p-3 shadow-xl rotate-[3deg]');
+            @endphp
+            <div class="{{ $card }}">
+                @if($img)
+                    <img src="{{ asset('storage/' . $img) }}" alt="{{ $t->name }}" class="rounded-2xl h-64 w-full object-contain bg-brand-card-light">
+                @else
+                    <div class="rounded-2xl h-64 bg-gradient-to-br from-brand-orange to-amber-200"></div>
+                @endif
+                <p class="text-center font-serif font-bold mt-3 text-sm">{{ $t->name }}</p>
+                <p class="text-center text-xs opacity-70 -mt-0.5 mb-1">Format {{ $t->layout_type }}</p>
             </div>
-            <p class="text-center font-serif font-bold mt-3 text-sm">Classic 2x2</p>
-        </div>
-        <div class="bg-brand-dark text-white rounded-3xl p-3 shadow-xl mt-6">
-            <div class="space-y-2">
-                <div class="rounded-2xl h-20 bg-brand-orange"></div>
-                <div class="rounded-2xl h-20 bg-white/20"></div>
-                <div class="rounded-2xl h-20 bg-white/20"></div>
-                <div class="rounded-2xl h-20 bg-white/20"></div>
+        @empty
+            <div class="col-span-3 bg-white rounded-3xl p-8 shadow-sm text-center text-sm text-brand-muted">
+                Belum ada desain. Buka <a href="{{ route('camera') }}" class="text-brand-orange font-bold">Camera</a> untuk mulai.
             </div>
-            <p class="text-center font-serif font-bold mt-3 text-sm">Classic 2x3</p>
-        </div>
-        <div class="bg-white rounded-3xl p-3 shadow-xl rotate-[3deg]">
-            <div class="grid grid-cols-2 gap-2">
-                <div class="rounded-xl h-24 bg-brand-card-light"></div>
-                <div class="rounded-xl h-24 bg-brand-orange/70"></div>
-                <div class="rounded-xl h-24 bg-brand-dark"></div>
-                <div class="rounded-xl h-24 bg-gradient-to-br from-stone-300 to-brand-bg"></div>
-            </div>
-            <p class="text-center font-serif font-bold mt-3 text-sm">Retro 2x3</p>
-        </div>
+        @endforelse
     </div>
 </section>
 

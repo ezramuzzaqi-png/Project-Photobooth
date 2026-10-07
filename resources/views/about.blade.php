@@ -7,18 +7,18 @@
     <h1 class="font-serif font-extrabold text-5xl md:text-6xl">About us</h1>
     <p class="mt-6 text-brand-muted max-w-2xl mx-auto leading-relaxed">Kami percaya setiap momen seru bersama teman dan keluarga layak diabadikan dengan cara yang menyenangkan — cukup lewat browser, tanpa aplikasi tambahan.</p>
 
-    {{-- Metrik Statistik --}}
+    {{-- Metrik Statistik (live dari database) --}}
     <div class="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
         <div>
-            <p class="text-brand-orange font-bold text-5xl">100k++</p>
+            <p class="text-brand-orange font-bold text-5xl">{{ number_format($stats['photos'], 0, ',', '.') }}+</p>
             <p class="mt-2 text-sm text-brand-muted">Foto diambil</p>
         </div>
         <div>
-            <p class="text-brand-orange font-bold text-5xl">1M+</p>
+            <p class="text-brand-orange font-bold text-5xl">{{ number_format($stats['users'], 0, ',', '.') }}+</p>
             <p class="mt-2 text-sm text-brand-muted">Pengguna Aktif</p>
         </div>
         <div>
-            <p class="text-brand-orange font-bold text-5xl">5/5</p>
+            <p class="text-brand-orange font-bold text-5xl">{{ $stats['rating'] }}</p>
             <p class="mt-2 text-sm text-brand-muted">Rating Pengguna</p>
         </div>
     </div>

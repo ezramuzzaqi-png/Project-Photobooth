@@ -44,8 +44,6 @@
                 <button type="submit" class="bg-brand-orange text-white rounded-full py-3 w-full font-semibold hover:bg-brand-orange-hover transition">Daftar</button>
             </form>
 
-            <button class="mt-3 border border-gray-300 rounded-full py-3 w-full font-semibold hover:bg-gray-50 transition">G &nbsp;Daftar dengan Google</button>
-
             <p class="mt-6 text-center text-sm text-brand-muted">Sudah punya akun? <a href="{{ route('login') }}" class="text-brand-orange font-bold">Masuk</a></p>
         </div>
     </div>

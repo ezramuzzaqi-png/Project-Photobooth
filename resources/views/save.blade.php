@@ -63,28 +63,33 @@
 </section>
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
     const pageUrl = @json(route('photo.result', $photo->id));
     const imgUrl = @json(asset('storage/' . $photo->result_image_path));
     document.getElementById('shareWA').href = 'https://wa.me/?text=' + encodeURIComponent('Lihat photostrip HOLD MOMENT ku! ' + pageUrl);
-    document.getElementById('shareIG').href = imgUrl;
+    // Bagikan: Web Share API bila ada, kalau tidak salin link, terakhir buka gambar.
+    document.getElementById('shareIG').addEventListener('click', async (e) => {
+        e.preventDefault();
+        const copyMsg = document.getElementById('copyMsg');
+        if (navigator.share) {
+            try { await navigator.share({ title: "HOLD' MOMENT", text: 'Lihat photostrip HOLD MOMENT ku!', url: pageUrl }); } catch (err) {}
+        } else {
+            try {
+                await navigator.clipboard.writeText(pageUrl);
+                copyMsg.textContent = 'Link disalin, tempel di Instagram-mu!';
+                copyMsg.classList.remove('hidden');
+            } catch (err) { window.open(imgUrl, '_blank'); }
+        }
+    });
     document.getElementById('copyLink').addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(pageUrl);
-            document.getElementById('copyMsg').classList.remove('hidden');
+            const copyMsg = document.getElementById('copyMsg');
+            copyMsg.textContent = 'Link disalin!';
+            copyMsg.classList.remove('hidden');
         } catch (e) { alert(pageUrl); }
     });
-    async function downloadPDF() {
-        const { jsPDF } = window.jspdf || {};
-        if (!jsPDF) {
-            // fallback: buka gambar, user Save as PDF via print
-            window.open(imgUrl, '_blank');
-            return;
-        }
-    }
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
     async function downloadPDF() {
         try {
             const img = new Image();

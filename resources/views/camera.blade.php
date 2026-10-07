@@ -18,7 +18,10 @@
                 </div>
             </div>
             <div>
-                <p class="font-bold text-sm mb-3">Desain Strip</p>
+                <div class="flex items-center justify-between mb-3">
+                    <p class="font-bold text-sm">Desain Strip</p>
+                    <span id="designCount" class="text-xs text-brand-muted"></span>
+                </div>
                 <div class="space-y-2 max-h-64 overflow-y-auto pr-1" id="designPicker">
                     <button data-template="" class="design-btn w-full flex items-center gap-3 border border-brand-orange bg-brand-orange/10 rounded-xl p-2 text-left hover:border-brand-orange transition">
                         <span class="w-10 h-12 shrink-0 rounded-lg bg-brand-card-light flex items-center justify-center text-brand-muted text-xs font-bold">—</span>
@@ -95,27 +98,76 @@
             </div>
         </aside>
 
-        {{-- Tengah: Live Camera --}}
-        <div class="bg-white rounded-3xl p-6 shadow-sm">
+        {{-- Tengah: Live Camera (tampil paling atas di HP) --}}
+        <div class="bg-white rounded-3xl p-6 shadow-sm max-lg:order-first">
             <style>
                 #cameraBox:fullscreen { aspect-ratio: auto !important; width: 100%; height: 100%; border-radius: 0; background: #1C1C1C; }
                 #cameraBox:fullscreen #webcam { width: 100%; height: 100%; }
                 #cameraBox:fullscreen #countdownOverlay { font-size: 12rem; }
                 #cameraBox:fullscreen #cameraHint { font-size: 1rem; }
+                /* Overlay UI khusus fullscreen: sembunyi di mode normal */
+                #fsUI { display: none; }
+                #cameraBox:fullscreen #fsUI { display: flex; }
+                #fsMenuBar { scrollbar-width: thin; }
+                #fsMenuBar::-webkit-scrollbar { width: 6px; }
+                #fsMenuBar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.35); border-radius: 999px; }
+                #fsUI #fsMenuBar, #fsUI #btnFsShutter { transition: opacity .25s ease, transform .15s ease, box-shadow .2s ease, background-color .15s ease; }
+                #fsUI.fs-hidden-ui #fsMenuBar, #fsUI.fs-hidden-ui #btnFsShutter { opacity: 0; pointer-events: none; }
+                #fsUI .fs-chip:active { transform: scale(.9); }
+                #fsUI .fs-chip.fs-active { background: #D95B32; color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.9), 0 8px 18px rgba(217,91,50,.55); transform: translateY(-2px); }
+                #btnFsShutter { box-shadow: 0 10px 28px rgba(0,0,0,.55), 0 0 0 4px rgba(255,255,255,.9); }
+                #btnFsShutter:active { transform: scale(.88); }
+                #btnFsShutter.fs-capturing { animation: fsPulse 1s ease-out infinite; pointer-events: none; }
+                @keyframes fsPulse { 0% { box-shadow: 0 0 0 0 rgba(217,91,50,.75), 0 0 0 4px rgba(255,255,255,.9); } 70% { box-shadow: 0 0 0 26px rgba(217,91,50,0), 0 0 0 4px rgba(255,255,255,.9); } 100% { box-shadow: 0 0 0 0 rgba(217,91,50,0), 0 0 0 4px rgba(255,255,255,.9); } }
+                #captureFlash { transition: opacity .35s ease; }
+                /* Tombol fullscreen mini gaya Youtube: muncul saat hover, selalu tampil di sentuh */
+                #fsToggleMini { opacity: 0; }
+                #cameraBox:hover #fsToggleMini { opacity: 1; }
+                @media (hover: none) { #fsToggleMini { opacity: 1; } }
+                #cameraBox:fullscreen #fsToggleMini { display: none; }
+                #fsExitBtn { display: none; }
+                #cameraBox:fullscreen #fsExitBtn { display: flex; }
             </style>
             <div id="cameraBox" class="relative rounded-2xl overflow-hidden bg-brand-dark aspect-[4/3]">
                 <video id="webcam" autoplay playsinline muted class="w-full h-full object-cover" style="transform: none;"></video>
-                <div id="countdownOverlay" class="absolute inset-0 hidden items-center justify-center bg-black/50 text-white font-serif font-extrabold text-8xl">3</div>
+                <div id="countdownOverlay" class="absolute inset-0 z-20 hidden items-center justify-center bg-black/50 text-white font-serif font-extrabold text-8xl">3</div>
+                <div id="captureFlash" class="absolute inset-0 z-10 bg-white opacity-0 pointer-events-none"></div>
                 <p id="cameraHint" class="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/80 text-xs bg-black/40 rounded-full px-4 py-1">Kamera belum aktif — isi biodata dulu</p>
+                <button id="fsToggleMini" title="Fullscreen (F)" class="absolute bottom-3 right-3 z-10 w-10 h-10 rounded-full bg-black/55 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur transition">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15" stroke-linecap="round"/></svg>
+                </button>
+                <button id="fsExitBtn" title="Keluar fullscreen (Esc)" class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/55 hover:bg-black/80 text-white items-center justify-center backdrop-blur transition">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M9 4v5.5A1.5 1.5 0 0 1 7.5 11H4M20 4h-4.5A1.5 1.5 0 0 0 14 5.5V9M15 20v-5.5a1.5 1.5 0 0 1 1.5-1.5H20M4 20h4.5A1.5 1.5 0 0 0 10 18.5V14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                {{-- Overlay UI fullscreen: menubar kiri layar + tombol shutter kanan tengah --}}
+                <div id="fsUI" class="absolute inset-y-0 inset-x-0 z-10 items-center justify-between pl-5 pr-5">
+                    <div id="fsMenuBar" class="flex flex-col items-stretch gap-2 w-auto max-h-[62vh] overflow-y-auto bg-black/55 backdrop-blur rounded-2xl px-2.5 py-2.5">
+                        <div id="fsMainMenu" class="flex flex-col items-center gap-2">
+                            <button data-fsmenu="filter" title="Filter" class="fs-chip w-11 h-11 rounded-full text-white/90 bg-white/15 hover:bg-white/25 flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><path d="M4 5h16l-6.5 7.5V19l-3 1.5v-8L4 5z" stroke-linejoin="round"/></svg>
+                            </button>
+                            <button data-fsmenu="timer" title="Timer" class="fs-chip w-11 h-11 rounded-full text-white/90 bg-white/15 hover:bg-white/25 flex items-center justify-center">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5"><circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.5 1.5M9.5 3h5" stroke-linecap="round"/></svg>
+                            </button>
+                        </div>
+                        <div id="fsFilterMenu" class="hidden flex-col items-stretch gap-1.5 w-40">
+                            <button data-fsback class="fs-chip w-full text-white/90 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 text-xs font-bold">‹ Kembali</button>
+                        </div>
+                        <div id="fsTimerMenu" class="hidden flex-col items-stretch gap-1.5 w-40">
+                            <button data-fsback class="fs-chip w-full text-white/90 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 text-xs font-bold">‹ Kembali</button>
+                        </div>
+                    </div>
+                    <button id="btnFsShutter" title="Jepret foto" class="shrink-0 w-20 h-20 rounded-full bg-brand-orange text-white flex items-center justify-center hover:bg-brand-orange-hover">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-9 h-9"><path d="M4 8h2.6L8.6 5.5h6.8L17.4 8H20A1.5 1.5 0 0 1 21.5 9.5V18a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V9.5A1.5 1.5 0 0 1 4 8z" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3.4"/></svg>
+                    </button>
+                </div>
             </div>
             <canvas id="captureCanvas" class="hidden"></canvas>
             <div class="mt-4 flex flex-wrap gap-3">
                 <button id="btnCapture" disabled class="bg-brand-orange disabled:opacity-40 text-white rounded-full px-8 py-3 font-semibold hover:bg-brand-orange-hover transition">Jepret Foto</button>
-                <button id="btnFullscreen" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition">⛶ Fullscreen Kamera</button>
                 <button id="btnRetakeOne" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition">↺ Retake terakhir</button>
                 <button id="btnRetakeAll" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition">⟲ Ulangi semua</button>
             </div>
-            <p class="mt-2 text-xs text-brand-muted">Mode fullscreen: tekan <kbd class="font-bold">Enter</kbd> untuk jepret, <kbd class="font-bold">Esc</kbd> untuk keluar.</p>
             <p id="captureError" class="hidden mt-3 text-sm text-red-600"></p>
         </div>
 
@@ -202,20 +254,82 @@
     // Preload frame overlay & background agar preview langsung tampil saat desain dipilih
     const frameCache = {};
     const backgroundCache = {};
+    const detectedCache = {}; // hasil ukur otomatis lubang per template (kunci: id_total)
+    function invalidateDetected(id) {
+        Object.keys(detectedCache).forEach(k => { if (k.startsWith(id + '_')) delete detectedCache[k]; });
+    }
     TEMPLATES.forEach(t => {
         if (t.frame_url) {
             const img = new Image();
-            img.onload = () => { frameCache[t.id] = img; if (String(state.templateId) === String(t.id)) drawStripPreview(); };
+            img.onload = () => { frameCache[t.id] = img; invalidateDetected(t.id); if (String(state.templateId) === String(t.id)) drawStripPreview(); };
             img.onerror = () => { delete frameCache[t.id]; };
             img.src = t.frame_url;
         }
         if (t.background_url) {
             const bg = new Image();
-            bg.onload = () => { backgroundCache[t.id] = bg; if (String(state.templateId) === String(t.id)) drawStripPreview(); };
+            bg.onload = () => { backgroundCache[t.id] = bg; invalidateDetected(t.id); if (String(state.templateId) === String(t.id)) drawStripPreview(); };
             bg.onerror = () => { delete backgroundCache[t.id]; };
             bg.src = t.background_url;
         }
     });
+
+    // Ukur otomatis lubang foto pada gambar frame/background (transparan ATAU
+    // kotak putih) untuk template upload-an admin yang belum punya slots.
+    // Murni JS (canvas getImageData), tanpa library. Gagal → null (pakai grid baku).
+    function detectHoles(img, total) {
+        const fw = img.naturalWidth, fh = img.naturalHeight;
+        if (!fw || !fh) return null;
+        if (!Number.isInteger(total / 2) || total < 1) return null;
+        const aw = Math.min(fw, 360);
+        const ah = Math.max(1, Math.round(aw * fh / fw));
+        const cv = document.createElement('canvas');
+        cv.width = aw; cv.height = ah;
+        const cx = cv.getContext('2d', { willReadFrequently: true });
+        cx.drawImage(img, 0, 0, aw, ah);
+        let data;
+        try { data = cx.getImageData(0, 0, aw, ah).data; }
+        catch (e) { return null; }
+        const isHole = (x, y) => {
+            if (x < 0 || y < 0 || x >= aw || y >= ah) return false;
+            const i = (y * aw + x) * 4;
+            if (data[i + 3] < 128) return true;
+            return data[i] >= 215 && data[i + 1] >= 215 && data[i + 2] >= 215; // kotak terang
+        };
+        const holes = [];
+        const minH = ah * 0.07, minW = (aw / 2) * 0.55;
+        [Math.floor(aw / 4), Math.floor(3 * aw / 4)].forEach(px => {
+            const half = px < aw / 2 ? [0, Math.floor(aw / 2)] : [Math.floor(aw / 2), aw];
+            const runs = [];
+            let inRun = false, s = 0;
+            for (let y = 0; y < ah; y++) {
+                const t = isHole(px, y);
+                if (t && !inRun) { inRun = true; s = y; }
+                else if (!t && inRun) { inRun = false; runs.push([s, y]); }
+            }
+            if (inRun) runs.push([s, ah]);
+            runs.forEach(r => {
+                if ((r[1] - r[0]) < minH) return;
+                const ym = Math.floor((r[0] + r[1]) / 2);
+                let l = px; while (l > half[0] && isHole(l - 1, ym)) l--;
+                let rr = px; while (rr < half[1] - 1 && isHole(rr + 1, ym)) rr++;
+                if ((rr - l) < minW) return;
+                const midx = Math.floor((l + rr) / 2);
+                let t = r[0]; while (t > 0 && isHole(midx, t - 1)) t--;
+                let b = r[1]; while (b < ah - 1 && isHole(midx, b + 1)) b++;
+                holes.push([l, t, rr - l, b - t]);
+            });
+        });
+        let kept = holes;
+        if (kept.length > total) {
+            const areas = kept.map(hh => hh[2] * hh[3]).sort((a, b) => a - b);
+            const med = areas[Math.floor(areas.length / 2)];
+            kept = kept.filter(hh => (hh[2] * hh[3]) >= 0.55 * med);
+        }
+        if (kept.length !== total) return null;
+        kept.sort((a, b) => (a[1] - b[1]) || (a[0] - b[0]));
+        const k = fw / aw;
+        return { fw, fh, holes: kept.map(hh => [Math.round(hh[0] * k), Math.round(hh[1] * k), Math.round(hh[2] * k), Math.round(hh[3] * k)]) };
+    }
 
     function selectedTemplate() {
         return TEMPLATES.find(t => String(t.id) === String(state.templateId)) || null;
@@ -227,16 +341,21 @@
         'receipt': { cols: 2, rows: 2, total: 4 }, // 2 strip kembar, tiap strip 1 kolom × 2 foto
     };
 
-    // Template ber-frame terukur: foto mengikuti lubang transparan frame
-    // (hasil ukur piksel, dikirim controller sebagai tpl.slots), bukan grid baku.
+    // Foto mengikuti lubang desain (bukan grid baku) bila tersedia:
+    // 1) slots presisi dari database, 2) hasil ukur otomatis gambarnya.
     // Syarat: jumlah lubang harus sama dengan total slot layout aktif.
     function slottedTemplate() {
         const tpl = selectedTemplate();
-        if (!tpl || !tpl.slots || !Array.isArray(tpl.slots.holes)) return null;
-        if (!tpl.slots.fw || !tpl.slots.fh) return null;
-        if (!LAYOUTS[state.layout]) return null;
-        if (tpl.slots.holes.length !== LAYOUTS[state.layout].total) return null;
-        return tpl.slots;
+        if (!tpl || !LAYOUTS[state.layout]) return null;
+        const total = LAYOUTS[state.layout].total;
+        if (tpl.slots && Array.isArray(tpl.slots.holes) && tpl.slots.fw && tpl.slots.fh
+            && tpl.slots.holes.length === total) return tpl.slots;
+        const key = tpl.id + '_' + total;
+        if (!(key in detectedCache)) {
+            const img = (tpl.frame_url && frameCache[tpl.id]) || (tpl.background_url && backgroundCache[tpl.id]) || null;
+            detectedCache[key] = (img && img.complete && img.naturalWidth) ? detectHoles(img, total) : null;
+        }
+        return detectedCache[key];
     }
 
     function requiredTotal() {
@@ -415,6 +534,7 @@
         try {
             state.shots.push(captureFrame());
             render();
+            if (typeof flashCapture === 'function') flashCapture();
         } catch (e) {
             errBox.textContent = 'Gagal mengambil foto: ' + e.message;
             errBox.classList.remove('hidden');
@@ -425,14 +545,9 @@
 
     btnCapture.addEventListener('click', startCapture);
 
-    // Mode fullscreen: tombol toggle + Enter = jepret (Esc keluar otomatis oleh browser)
+    // Mode fullscreen: tombol mini hover (gaya Youtube) + tombol F (Esc keluar)
     const cameraBox = document.getElementById('cameraBox');
-    const btnFullscreen = document.getElementById('btnFullscreen');
-    function syncFullscreenLabel() {
-        const on = !!document.fullscreenElement;
-        if (btnFullscreen) btnFullscreen.textContent = on ? '⛶ Keluar Fullscreen (Esc)' : '⛶ Fullscreen Kamera';
-    }
-    btnFullscreen?.addEventListener('click', async () => {
+    async function toggleFullscreen() {
         errBox.classList.add('hidden');
         try {
             if (document.fullscreenElement) {
@@ -446,18 +561,89 @@
             errBox.textContent = 'Gagal masuk fullscreen: ' + e.message;
             errBox.classList.remove('hidden');
         }
-    });
-    document.addEventListener('fullscreenchange', syncFullscreenLabel);
-    syncFullscreenLabel();
-
+    }
+    document.getElementById('fsToggleMini')?.addEventListener('click', toggleFullscreen);
+    document.getElementById('fsExitBtn')?.addEventListener('click', toggleFullscreen);
     document.addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter') return;
-        if (!document.fullscreenElement) return; // Enter hanya jadi shutter dalam mode fullscreen
+        if (e.key !== 'f' && e.key !== 'F') return;
         const tag = (e.target && e.target.tagName) || '';
-        if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) return;
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
         if (!modal.classList.contains('hidden')) return; // biodata belum diisi
         e.preventDefault();
-        startCapture();
+        toggleFullscreen();
+    });
+
+    // ===== Overlay UI fullscreen: shutter + menubar Filter/Timer =====
+    const fsUI = document.getElementById('fsUI');
+    const fsMainMenu = document.getElementById('fsMainMenu');
+    const fsFilterMenu = document.getElementById('fsFilterMenu');
+    const fsTimerMenu = document.getElementById('fsTimerMenu');
+    const btnFsShutter = document.getElementById('btnFsShutter');
+    const captureFlash = document.getElementById('captureFlash');
+
+    function fsShowMenu(which) {
+        fsMainMenu.classList.toggle('hidden', which !== 'main');
+        fsMainMenu.classList.toggle('flex', which === 'main');
+        fsFilterMenu.classList.toggle('hidden', which !== 'filter');
+        fsFilterMenu.classList.toggle('flex', which === 'filter');
+        fsTimerMenu.classList.toggle('hidden', which !== 'timer');
+        fsTimerMenu.classList.toggle('flex', which === 'timer');
+        if (which !== 'main') syncFsMenus();
+    }
+
+    function syncFsMenus() {
+        fsFilterMenu.querySelectorAll('[data-fsfilter]').forEach(c => c.classList.toggle('fs-active', c.dataset.fsfilter === state.filter));
+        fsTimerMenu.querySelectorAll('[data-fstimer]').forEach(c => c.classList.toggle('fs-active', parseInt(c.dataset.fstimer, 10) === state.timer));
+    }
+
+    function flashCapture() {
+        if (!captureFlash) return;
+        captureFlash.style.opacity = '0.85';
+        setTimeout(() => { captureFlash.style.opacity = '0'; }, 120);
+    }
+
+    // Chip filter/timer dibangun dari tombol panel samping (sumber tunggal)
+    document.querySelectorAll('#filterPicker .filter-btn').forEach(b => {
+        const c = document.createElement('button');
+        c.dataset.fsfilter = b.dataset.filter;
+        c.textContent = b.textContent.trim();
+        c.className = 'fs-chip w-full text-left text-white/90 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 text-xs font-semibold';
+        c.addEventListener('click', () => {
+            state.filter = c.dataset.fsfilter;
+            video.style.filter = state.filter;
+            const side = document.querySelector('#filterPicker .filter-btn[data-filter="' + CSS.escape(state.filter) + '"]');
+            if (side) setActive('.filter-btn', side);
+            syncFsMenus();
+        });
+        fsFilterMenu.appendChild(c);
+    });
+    document.querySelectorAll('#timerPicker .timer-btn').forEach(b => {
+        const c = document.createElement('button');
+        c.dataset.fstimer = b.dataset.timer;
+        c.textContent = b.textContent.trim();
+        c.className = 'fs-chip w-full text-left text-white/90 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 text-xs font-semibold';
+        c.addEventListener('click', () => {
+            state.timer = parseInt(c.dataset.fstimer, 10);
+            const side = document.querySelector('#timerPicker .timer-btn[data-timer="' + CSS.escape(String(state.timer)) + '"]');
+            if (side) setActive('.timer-btn', side);
+            syncFsMenus();
+        });
+        fsTimerMenu.appendChild(c);
+    });
+    document.querySelectorAll('[data-fsmenu]').forEach(b => b.addEventListener('click', () => fsShowMenu(b.dataset.fsmenu)));
+    document.querySelectorAll('[data-fsback]').forEach(b => b.addEventListener('click', () => fsShowMenu('main')));
+    document.addEventListener('fullscreenchange', () => { if (document.fullscreenElement) fsShowMenu('main'); });
+
+    btnFsShutter?.addEventListener('click', async () => {
+        if (state.busy || !state.stream) return;
+        if (state.shots.length >= requiredTotal()) return;
+        fsUI.classList.add('fs-hidden-ui'); // semua bar & tombol hilang, countdown tetap
+        btnFsShutter.classList.add('fs-capturing');
+        try { await startCapture(); }
+        finally {
+            btnFsShutter.classList.remove('fs-capturing');
+            fsUI.classList.remove('fs-hidden-ui');
+        }
     });
 
     btnRetakeOne.addEventListener('click', () => {
@@ -471,7 +657,24 @@
         btnCapture.disabled = !state.stream;
     });
 
+    // Daftar desain hanya menampilkan yang sesuai format terpilih:
+    // Polos (universal) selalu tampil; Receipt dihitung anggota kelompok 2x2.
+    function filterDesigns() {
+        let n = 0;
+        document.querySelectorAll('.design-btn').forEach(b => {
+            const tplId = b.dataset.template || '';
+            const lay = b.dataset.layout || '';
+            // Receipt anggota kelompok 2x2: tampil saat format 2x2, sembunyi saat 2x3.
+            const show = tplId === '' || lay === state.layout || (lay === 'receipt' && state.layout === '2x2');
+            b.classList.toggle('hidden', !show);
+            if (show) n++;
+        });
+        const el = document.getElementById('designCount');
+        if (el) el.textContent = n + ' pilihan utk ' + (state.layout === 'receipt' ? 'Receipt' : state.layout);
+    }
+
     function render() {
+        filterDesigns();
         // thumbnails
         thumbs.innerHTML = '';
         state.shots.forEach((src) => {
@@ -516,17 +719,23 @@
         const slots = slottedTemplate();
         if (slots) {
             // Kanvas mengikuti rasio asli frame (1200x1800) agar overlay
-            // tidak melar, foto digambar tepat di tiap lubang (diinflasi 3px
-            // agar tepinya terselip di bawah bingkai, tanpa garis celah).
+            // tidak melar. Foto sedikit DILEBARKAN (+3px) bila ada frame
+            // overlay di atasnya (tepi terselip di bawah bingkai), tapi
+            // DIKECILKAN (-3px) bila tanpa frame agar tidak menutupi
+            // border milik desain background.
             const k = W / slots.fw;
-            const pad = 3;
+            const hasFrame = !!(selectedTemplate() && selectedTemplate().frame_url);
+            const pad = hasFrame ? 3 : -3;
             const holes = slots.holes.map(h => ({
                 x: (h[0] - pad) * k,
                 y: (h[1] - pad) * k,
                 w: (h[2] + pad * 2) * k,
                 h: (h[3] + pad * 2) * k,
             }));
-            return { slotted: true, s: k, holes, H: slots.fh * k };
+            // radius sudut mengikuti lubang desain (px frame → px kanvas);
+            // hasil ukur otomatis (tanpa radius) pakai default 12px frame.
+            const radius = (slots.radius != null ? slots.radius : 12) * k;
+            return { slotted: true, s: k, holes, radius, H: slots.fh * k };
         }
         const s = W / 600;
         if (state.layout === 'receipt') {
@@ -716,15 +925,21 @@
         canvas.height = g.H;
         const ctx = canvas.getContext('2d');
         if (g.slotted) {
-            // Frame menutupi seluruh kanvas kecuali lubang: isi latar gelap
-            // (untuk slot preview yang masih kosong), gambar tiap foto tepat
-            // di lubangnya, lalu timpa frame overlay di atasnya.
-            ctx.fillStyle = '#1C1C1C';
-            ctx.fillRect(0, 0, W, g.H);
+            // Background digambar utuh mengikuti rasio aslinya (tidak melar);
+            // frame transparan menutupi penuh kecuali lubang; keduanya opsional.
+            // Tiap foto digambar tepat di lubangnya (milik background kotak
+            // putih/hitam maupun lubang transparan frame).
+            const bg = state.templateId ? backgroundCache[state.templateId] : null;
+            if (bg && bg.complete && bg.naturalWidth) {
+                ctx.drawImage(bg, 0, 0, W, g.H);
+            } else {
+                ctx.fillStyle = '#1C1C1C';
+                ctx.fillRect(0, 0, W, g.H);
+            }
             imgs.forEach((im, i) => {
                 const hole = g.holes[i];
                 if (!im || !hole) return;
-                drawCover(ctx, im, hole.x, hole.y, hole.w, hole.h, 2 * g.s);
+                drawCover(ctx, im, hole.x, hole.y, hole.w, hole.h, g.radius);
             });
             paintFrameOverlay(ctx, W, g.H);
             return;

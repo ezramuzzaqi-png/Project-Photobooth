@@ -9,7 +9,7 @@
         <div class="bg-brand-orange text-white p-12">
             <p class="font-serif font-extrabold tracking-widest">HOLD' MOMENT</p>
             <h2 class="font-serif font-extrabold text-3xl md:text-4xl mt-10 leading-tight">Abadikan momen serumu dalam sekejap.</h2>
-            <p class="mt-3 text-white/80 text-sm">Masuk untuk mengakses riwayat foto dan template favoritmu.</p>
+            <p class="mt-3 text-white/80 text-sm">Masuk agar hasil fotomu tersimpan di akunmu.</p>
         </div>
         {{-- Panel Kanan --}}
         <div class="bg-white p-12">
@@ -33,8 +33,6 @@
                 </div>
                 <button type="submit" class="bg-brand-orange text-white rounded-full py-3 w-full font-semibold hover:bg-brand-orange-hover transition">Masuk</button>
             </form>
-
-            <button class="mt-3 border border-gray-300 rounded-full py-3 w-full font-semibold hover:bg-gray-50 transition">G &nbsp;Lanjutkan dengan Google</button>
 
             <p class="mt-6 text-center text-sm text-brand-muted">Belum punya akun? <a href="{{ route('register') }}" class="text-brand-orange font-bold">Daftar</a></p>
         </div>

@@ -12,6 +12,7 @@
         <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'text-brand-orange underline underline-offset-4 decoration-2' : 'text-brand-text hover:text-brand-orange' }}">Home</a>
         <a href="{{ route('how-it-works') }}" class="{{ request()->routeIs('how-it-works') ? 'text-brand-orange underline underline-offset-4 decoration-2' : 'text-brand-text hover:text-brand-orange' }}">How it works</a>
         <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'text-brand-orange underline underline-offset-4 decoration-2' : 'text-brand-text hover:text-brand-orange' }}">About us</a>
+        <a href="{{ route('templates') }}" class="{{ request()->routeIs('templates') ? 'text-brand-orange underline underline-offset-4 decoration-2' : 'text-brand-text hover:text-brand-orange' }}">Galeri</a>
         <a href="{{ route('camera') }}" class="{{ request()->routeIs('camera') ? 'text-brand-orange underline underline-offset-4 decoration-2' : 'text-brand-text hover:text-brand-orange' }}">Camera</a>
     </nav>
 
@@ -39,6 +40,7 @@
         <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'text-brand-orange' : '' }}">Home</a>
         <a href="{{ route('how-it-works') }}" class="{{ request()->routeIs('how-it-works') ? 'text-brand-orange' : '' }}">How it works</a>
         <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'text-brand-orange' : '' }}">About us</a>
+        <a href="{{ route('templates') }}" class="{{ request()->routeIs('templates') ? 'text-brand-orange' : '' }}">Galeri</a>
         <a href="{{ route('camera') }}" class="{{ request()->routeIs('camera') ? 'text-brand-orange' : '' }}">Camera</a>
     </div>
 </nav>
