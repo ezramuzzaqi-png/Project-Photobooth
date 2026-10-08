@@ -23,8 +23,7 @@
                         <div class="rounded-2xl h-96 bg-brand-card-light flex items-center justify-center text-brand-muted text-xs font-bold">Tanpa gambar</div>
                     @endif
                     <p class="font-bold mt-3 text-sm px-1">{{ $t->name }}</p>
-                    <p class="text-xs text-brand-muted px-1">Format {{ $t->layout_type }}</p>
-                    <a href="{{ route('camera') }}" class="mt-3 mb-1 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-full py-2 text-sm font-semibold text-center transition">Pakai desain ini →</a>
+                    <p class="text-xs text-brand-muted px-1 pb-2">Format {{ $t->layout_type }}</p>
                 </div>
             @endforeach
         </div>

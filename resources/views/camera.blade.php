@@ -178,7 +178,6 @@
                 <span id="previewLayoutBadge" class="text-xs font-bold bg-brand-orange text-white rounded-full px-3 py-1">2x2</span>
             </div>
             <p id="previewDesignLabel" class="mt-1 text-xs text-brand-muted">Desain: Polos</p>
-            <div id="thumbs" class="mt-3 grid grid-cols-2 gap-2 min-h-[120px]"></div>
             <canvas id="stripPreview" class="mt-4 w-full rounded-2xl border border-black/10"></canvas>
             <button id="btnNext" disabled class="mt-4 bg-brand-dark disabled:opacity-40 text-white rounded-full py-3 w-full font-semibold hover:bg-black transition">Selanjutnya → Gabung & Simpan</button>
             <p class="mt-2 text-xs text-brand-muted">Setelah slot penuh, klik Selanjutnya untuk menggabung + mengirim ke server.</p>
@@ -211,7 +210,6 @@
     const hint = document.getElementById('cameraHint');
     const captureCanvas = document.getElementById('captureCanvas');
     const stripPreview = document.getElementById('stripPreview');
-    const thumbs = document.getElementById('thumbs');
     const btnCapture = document.getElementById('btnCapture');
     const btnNext = document.getElementById('btnNext');
     const btnRetakeOne = document.getElementById('btnRetakeOne');
@@ -533,7 +531,7 @@
         await countdown(state.timer);
         try {
             state.shots.push(captureFrame());
-            render();
+    render();
             if (typeof flashCapture === 'function') flashCapture();
         } catch (e) {
             errBox.textContent = 'Gagal mengambil foto: ' + e.message;
@@ -675,20 +673,6 @@
 
     function render() {
         filterDesigns();
-        // thumbnails
-        thumbs.innerHTML = '';
-        state.shots.forEach((src) => {
-            const img = document.createElement('img');
-            img.src = src;
-            img.className = 'rounded-xl w-full aspect-[4/3] object-cover border border-black/10';
-            thumbs.appendChild(img);
-        });
-        for (let i = state.shots.length; i < requiredTotal(); i++) {
-            const d = document.createElement('div');
-            d.className = 'rounded-xl w-full aspect-[4/3] bg-brand-card-light flex items-center justify-center text-brand-muted text-xs';
-            d.textContent = 'Slot ' + (i + 1);
-            thumbs.appendChild(d);
-        }
         progressLabel.textContent = state.shots.length + ' / ' + requiredTotal() + ' foto terisi';
         if (previewLayoutBadge) previewLayoutBadge.textContent = state.layout === 'receipt' ? 'Receipt' : state.layout;
         let designName = 'Polos';
