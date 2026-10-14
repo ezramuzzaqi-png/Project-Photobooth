@@ -1,28 +1,19 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', "Kelola Template — Admin HOLD' MOMENT")
 
-@section('content')
-<section class="max-w-6xl mx-auto px-6 pt-10 pb-14">
-    <div class="flex items-center justify-between">
-        <h1 class="font-serif font-extrabold text-3xl">Kelola Template & Background</h1>
-        <a href="{{ route('admin.dashboard') }}" class="text-sm text-brand-orange font-semibold">← Dashboard</a>
+@section('admin-content')
+    <div>
+        <h1 class="font-serif font-extrabold text-3xl md:text-4xl">Template</h1>
+        <p class="text-brand-muted text-sm mt-1">Upload background & frame, lalu kelola desain yang tampil di kamera.</p>
     </div>
-    @if(session('success'))
-        <div class="mt-4 bg-green-50 text-green-800 rounded-xl px-4 py-3 text-sm">{{ session('success') }}</div>
-    @endif
-    @if($errors->any())
-        <div class="mt-4 bg-red-50 text-red-700 rounded-xl px-4 py-3 text-sm">
-            <ul class="list-disc ml-5">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
 
     <div class="mt-6 bg-white rounded-3xl p-6 shadow-sm">
         <h2 class="font-bold">Upload Template / Background</h2>
         <p class="text-xs text-brand-muted mt-1">Background = gambar penuh di belakang foto (untuk strip persis 100% seperti foto referensi pixel/sky). Frame = overlay PNG transparan di atas foto. Isi salah satu atau keduanya.</p>
         <form method="POST" action="{{ route('admin.templates.store') }}" enctype="multipart/form-data" class="mt-4 grid md:grid-cols-5 gap-3 text-sm items-end">
             @csrf
-            <input type="text" name="name" required placeholder="Nama template" class="rounded-xl border border-gray-300 bg-brand-card-light px-4 py-2.5">
+            <input type="text" name="name" required placeholder="Nama template" class="rounded-xl border border-gray-300 bg-brand-card-light px-4 py-2.5 outline-none focus:border-brand-orange">
             <select name="layout_type" required class="rounded-xl border border-gray-300 bg-brand-card-light px-4 py-2.5">
                 <option value="2x2">2x2</option>
                 <option value="2x3">2x3</option>
@@ -35,11 +26,15 @@
             <label class="text-xs font-semibold">Frame
                 <input type="file" name="frame_image" accept="image/png,image/jpeg" class="mt-1 w-full text-sm font-normal">
             </label>
-            <button class="bg-brand-orange text-white rounded-full px-6 py-2.5 font-semibold hover:bg-brand-orange-hover">Upload</button>
+            <button class="bg-brand-orange text-white rounded-full px-6 py-2.5 font-semibold hover:bg-brand-orange-hover transition">Upload</button>
         </form>
     </div>
 
     <div class="mt-6 bg-white rounded-3xl p-6 shadow-sm overflow-x-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-lg">Daftar Template</h2>
+            <span class="text-xs text-brand-muted">{{ $templates->total() }} template</span>
+        </div>
         <table class="w-full text-sm min-w-[720px]">
             <thead><tr class="text-left text-brand-muted border-b"><th class="py-2">ID</th><th class="py-2">Preview</th><th class="py-2">Nama</th><th class="py-2">Layout</th><th class="py-2">File</th><th class="py-2">Dibuat</th><th class="py-2">Aksi</th></tr></thead>
             <tbody>
@@ -51,12 +46,14 @@
                                 <img src="{{ asset('storage/' . $t->background_image) }}" class="h-16 w-12 object-cover rounded border" alt="">
                             @elseif($t->frame_image)
                                 <img src="{{ asset('storage/' . $t->frame_image) }}" class="h-16 w-12 object-cover rounded border bg-brand-card-light" alt="">
+                            @elseif($t->layout_type === 'receipt')
+                                <img src="{{ asset('images/receipt-thumb.png') }}" class="h-16 w-12 object-cover rounded border" alt="Receipt">
                             @else
                                 <span class="text-brand-muted">—</span>
                             @endif
                         </td>
                         <td class="py-3 font-semibold">{{ $t->name }}</td>
-                        <td class="py-3">{{ $t->layout_type }}</td>
+                        <td class="py-3"><span class="text-xs font-bold bg-brand-card-light rounded-full px-2 py-0.5">{{ $t->layout_type }}</span></td>
                         <td class="py-3 text-xs text-brand-muted">
                             @if($t->background_image) bg: {{ Str::limit($t->background_image, 28) }}<br>@endif
                             @if($t->frame_image) fr: {{ Str::limit($t->frame_image, 28) }} @endif
@@ -80,5 +77,4 @@
         </table>
         <div class="mt-4">{{ $templates->links() }}</div>
     </div>
-</section>
 @endsection

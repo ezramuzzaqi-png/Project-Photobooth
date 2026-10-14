@@ -20,7 +20,7 @@
         <p class="font-bold text-lg mb-4">Pilih Tindakan</p>
 
         <button onclick="window.print()" class="w-full text-left bg-brand-card-light rounded-2xl p-4 flex items-center space-x-4 mb-3 hover:bg-[#e6e1d8] transition">
-            <span class="w-11 h-11 rounded-full bg-brand-orange text-white flex items-center justify-center text-xl shrink-0">⎙</span>
+            <span class="w-11 h-11 rounded-full bg-brand-orange text-white flex items-center justify-center shrink-0"><x-icon name="print" class="w-5 h-5" /></span>
             <span>
                 <span class="block font-bold">Cetak Strip</span>
                 <span class="block text-sm text-brand-muted">Cetak langsung dari sini!</span>
@@ -28,7 +28,7 @@
         </button>
 
         <div class="bg-brand-card-light rounded-2xl p-4 flex items-center space-x-4 mb-3">
-            <span class="w-11 h-11 rounded-full bg-brand-orange text-white flex items-center justify-center text-xl shrink-0">⬇</span>
+            <span class="w-11 h-11 rounded-full bg-brand-orange text-white flex items-center justify-center shrink-0"><x-icon name="download" class="w-5 h-5" /></span>
             <span class="flex-1">
                 <span class="block font-bold">Simpan foto</span>
                 <span class="block text-sm text-brand-muted">Simpan sebagai foto atau PDF</span>
@@ -41,22 +41,22 @@
 
         <div class="bg-brand-card-light rounded-2xl p-4 mb-6 mt-3">
             <div class="flex items-center space-x-4">
-                <span class="w-11 h-11 rounded-full bg-brand-orange text-white flex items-center justify-center text-xl shrink-0">↗</span>
+                <span class="w-11 h-11 rounded-full bg-brand-orange text-white flex items-center justify-center shrink-0"><x-icon name="share" class="w-5 h-5" /></span>
                 <span>
                     <span class="block font-bold">Bagikan ke media sosial</span>
                     <span class="block text-sm text-brand-muted">Langsung dari sini</span>
                 </span>
             </div>
             <div class="mt-3 flex items-center gap-2">
-                <a id="shareWA" href="#" target="_blank" class="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold hover:bg-brand-orange hover:text-white transition" title="WhatsApp">✆</a>
-                <a id="shareIG" href="#" class="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold hover:bg-brand-orange hover:text-white transition" title="Instagram">◎</a>
-                <button id="copyLink" class="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-brand-orange hover:text-white transition" title="Copy link">⛓</button>
+                <a id="shareWA" href="#" target="_blank" class="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-brand-orange hover:text-white transition" title="WhatsApp"><x-icon name="phone" class="w-4 h-4" /></a>
+                <a id="shareIG" href="#" class="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-brand-orange hover:text-white transition" title="Instagram"><x-icon name="instagram" class="w-5 h-5" /></a>
+                <button id="copyLink" class="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-brand-orange hover:text-white transition" title="Copy link"><x-icon name="link" class="w-4 h-4" /></button>
                 <span id="copyMsg" class="text-xs text-green-700 hidden">Link disalin!</span>
             </div>
         </div>
 
         <div class="flex items-center justify-between gap-3">
-            <a href="{{ route('camera') }}" class="border border-gray-400 text-gray-700 rounded-full px-6 py-2.5 hover:bg-gray-100 transition font-semibold text-sm">← Ambil Ulang</a>
+            <a href="{{ route('camera') }}" class="inline-flex items-center gap-2 border border-gray-400 text-gray-700 rounded-full px-6 py-2.5 hover:bg-gray-100 transition font-semibold text-sm"><x-icon name="arrow-left" class="w-4 h-4" /> Ambil Ulang</a>
             <a href="{{ route('home') }}" class="bg-brand-orange text-white rounded-full px-12 py-2.5 font-semibold hover:bg-brand-orange-hover transition text-sm">Selesai</a>
         </div>
     </div>

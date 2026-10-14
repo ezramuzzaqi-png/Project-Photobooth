@@ -5,63 +5,59 @@
 @section('content')
 <section class="max-w-6xl mx-auto px-6 pt-10 pb-14" x-data>
     <h1 class="font-serif font-extrabold text-3xl md:text-4xl">Photobooth Camera</h1>
-    <p class="text-brand-muted mt-2 text-sm">Isi biodata, atur format & filter, lalu jepret momen serumu.</p>
+    <p class="text-brand-muted mt-2 text-sm">Atur format & filter, jepret momen serumu, pilih desain, lalu simpan.</p>
 
-    <div class="mt-8 grid lg:grid-cols-[280px_1fr_280px] gap-6 items-start">
-        {{-- Panel Kiri: Kontrol --}}
-        <aside class="bg-white rounded-3xl p-6 shadow-sm space-y-6">
-            <div>
+    <div class="mt-8 grid lg:grid-cols-[84px_1fr_280px] gap-6 items-start">
+        {{-- Sidebar vertikal: Strip / Filter / Timer + pop-up sub-menu.
+             Sumber data TETAP tombol picker lama di panel kontrol (disembunyikan,
+             dipakai sebagai sumber tunggal agar semua logika lama ikut jalan). --}}
+        <div class="relative max-lg:order-first" id="toolRailWrap">
+            <div class="bg-white rounded-3xl shadow-sm p-2 flex lg:flex-col flex-row gap-1 lg:sticky lg:top-4" id="toolRail">
+                <button data-tool="strip" class="tool-btn flex-1 lg:w-full flex flex-col items-center gap-1 rounded-2xl px-2 py-3 transition" title="Pilih Strip">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M12 4.5v15M3.5 12h17" stroke-linecap="round"/></svg>
+                    <span class="text-[11px] font-bold leading-none">Strip</span>
+                    <span class="tool-val text-[10px] leading-none opacity-70" id="toolValStrip">2x2</span>
+                </button>
+                <button data-tool="filter" class="tool-btn flex-1 lg:w-full flex flex-col items-center gap-1 rounded-2xl px-2 py-3 transition" title="Pilih Filter">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><path d="M4 8h8M18 8h2M4 16h2M12 16h8" stroke-linecap="round"/><circle cx="15" cy="8" r="2.2"/><circle cx="9" cy="16" r="2.2"/></svg>
+                    <span class="text-[11px] font-bold leading-none">Filter</span>
+                    <span class="tool-val text-[10px] leading-none opacity-70" id="toolValFilter">Normal</span>
+                </button>
+                <button data-tool="timer" class="tool-btn flex-1 lg:w-full flex flex-col items-center gap-1 rounded-2xl px-2 py-3 transition" title="Atur Timer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6"><circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.5 1.5M9.5 3h5" stroke-linecap="round"/></svg>
+                    <span class="text-[11px] font-bold leading-none">Timer</span>
+                    <span class="tool-val text-[10px] leading-none opacity-70" id="toolValTimer">3s</span>
+                </button>
+            </div>
+            <div id="toolPopup" class="hidden absolute z-30 lg:left-full lg:top-0 lg:ml-3 lg:mt-0 left-0 top-full mt-3 w-[300px] max-w-[calc(100vw-3rem)] bg-white rounded-3xl shadow-xl border border-black/10 p-5">
+                <div class="flex items-center justify-between">
+                    <p id="toolPopupTitle" class="font-bold text-sm">Pilih Strip</p>
+                    <button id="toolPopupClose" class="w-8 h-8 rounded-full hover:bg-brand-card-light flex items-center justify-center transition" title="Tutup (Esc)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+                    </button>
+                </div>
+                <p id="toolPopupSub" class="text-xs text-brand-muted mt-1 mb-4"></p>
+                <div id="toolPopupBodyStrip" class="hidden space-y-4">
+                    <div>
+                        <p class="text-xs font-bold text-brand-muted mb-2">FORMAT</p>
+                        <div id="stripFormatCards" class="space-y-2"></div>
+                    </div>
+                </div>
+                <div id="toolPopupBodyFilter" class="hidden grid grid-cols-3 gap-3"></div>
+                <div id="toolPopupBodyTimer" class="hidden flex gap-2"></div>
+            </div>
+        </div>
+        {{-- Panel kontrol lama dilebur: pickers disembunyikan di sini sebagai sumber data popup/fullscreen; Mirror + info pindah ke panel kamera --}}
+        <div class="hidden" aria-hidden="true">
+            {{-- Format/Filter/Timer dipindah ke sidebar vertikal (tetap di DOM sebagai sumber data) --}}
+            <div class="hidden">
                 <p class="font-bold text-sm mb-3">Format Strip</p>
                 <div class="grid grid-cols-2 gap-2" id="layoutPicker">
                     <button data-layout="2x2" class="layout-btn border border-brand-orange bg-brand-orange text-white rounded-xl px-2 py-2 text-sm font-semibold">2x2</button>
                     <button data-layout="2x3" class="layout-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">2x3</button>
                 </div>
             </div>
-            <div>
-                <div class="flex items-center justify-between mb-3">
-                    <p class="font-bold text-sm">Desain Strip</p>
-                    <span id="designCount" class="text-xs text-brand-muted"></span>
-                </div>
-                <div class="space-y-2 max-h-64 overflow-y-auto pr-1" id="designPicker">
-                    <button data-template="" class="design-btn w-full flex items-center gap-3 border border-brand-orange bg-brand-orange/10 rounded-xl p-2 text-left hover:border-brand-orange transition">
-                        <span class="w-10 h-12 shrink-0 rounded-lg bg-brand-card-light flex items-center justify-center text-brand-muted text-xs font-bold">—</span>
-                        <span>
-                            <span class="block text-sm font-bold">Polos</span>
-                            <span class="block text-xs text-brand-muted">Cream bawaan</span>
-                        </span>
-                    </button>
-                    <button data-template="receipt" data-layout="receipt" class="design-btn w-full flex items-center gap-3 border border-gray-300 rounded-xl p-2 text-left hover:border-brand-orange transition">
-                        <span class="w-10 h-12 shrink-0 rounded-lg bg-white border border-black/10 flex flex-col items-center justify-center gap-[3px] px-2">
-                            <span class="w-full h-[2px] bg-black/80"></span>
-                            <span class="w-2/3 h-[2px] bg-black/50"></span>
-                            <span class="w-full h-[2px] bg-black/50"></span>
-                            <span class="w-1/2 h-[2px] bg-black/80"></span>
-                        </span>
-                        <span>
-                            <span class="block text-sm font-bold">Receipt</span>
-                            <span class="block text-xs text-brand-muted">2 strip kembar • gaya struk</span>
-                        </span>
-                    </button>
-                    @forelse($templates as $t)
-                        <button data-template="{{ $t->id }}" data-layout="{{ $t->layout_type }}" class="design-btn w-full flex items-center gap-3 border border-gray-300 rounded-xl p-2 text-left hover:border-brand-orange transition">
-                            @if($t->background_image)
-                                <img src="{{ asset('storage/' . $t->background_image) }}" alt="{{ $t->name }}" class="w-10 h-12 shrink-0 rounded-lg object-cover bg-brand-card-light border border-black/10" onerror="this.style.visibility='hidden'">
-                            @elseif($t->frame_image)
-                                <img src="{{ asset('storage/' . $t->frame_image) }}" alt="{{ $t->name }}" class="w-10 h-12 shrink-0 rounded-lg object-cover bg-brand-card-light border border-black/10" onerror="this.style.visibility='hidden'">
-                            @else
-                                <span class="w-10 h-12 shrink-0 rounded-lg bg-brand-card-light border border-black/10 flex items-center justify-center text-xs">—</span>
-                            @endif
-                            <span>
-                                <span class="block text-sm font-bold">{{ $t->name }}</span>
-                                <span class="block text-xs text-brand-muted">Format {{ $t->layout_type }} @if($t->background_image) • bg @endif @if($t->frame_image) • frame @endif</span>
-                            </span>
-                        </button>
-                    @empty
-                        <p class="text-xs text-brand-muted bg-brand-card-light rounded-xl p-3">Belum ada desain. Admin bisa upload lewat panel admin → Template.</p>
-                    @endforelse
-                </div>
-            </div>
-            <div>
+            <div class="hidden">
                 <p class="font-bold text-sm mb-3">Filter Kamera</p>
                 <div class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1" id="filterPicker">
                     <button data-filter="none" class="filter-btn border border-brand-orange bg-brand-orange text-white rounded-xl px-2 py-2 text-sm font-semibold">Normal</button>
@@ -79,7 +75,7 @@
                     <button data-filter="invert(1)" class="filter-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">Negatif</button>
                 </div>
             </div>
-            <div>
+            <div class="hidden">
                 <p class="font-bold text-sm mb-3">Delay Timer</p>
                 <div class="grid grid-cols-3 gap-2" id="timerPicker">
                     <button data-timer="3" class="timer-btn border border-brand-orange bg-brand-orange text-white rounded-xl px-2 py-2 text-sm font-semibold">3s</button>
@@ -87,16 +83,7 @@
                     <button data-timer="10" class="timer-btn border border-gray-300 rounded-xl px-2 py-2 text-sm font-semibold hover:border-brand-orange">10s</button>
                 </div>
             </div>
-            <div>
-                <p class="font-bold text-sm mb-3">Mirror</p>
-                <button id="mirrorToggle" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-semibold hover:border-brand-orange">Mirror: OFF — preview normal</button>
-                <p class="text-xs text-brand-muted mt-1">Aktifkan jika preview masih terbalik.</p>
-            </div>
-            <div class="bg-brand-card-light rounded-2xl p-4 text-xs text-brand-muted">
-                <p><span class="font-bold text-brand-text" id="visitorLabel">Pengunjung: -</span></p>
-                <p id="progressLabel" class="mt-1">0 / 4 foto terisi</p>
-            </div>
-        </aside>
+        </div>
 
         {{-- Tengah: Live Camera (tampil paling atas di HP) --}}
         <div class="bg-white rounded-3xl p-6 shadow-sm max-lg:order-first">
@@ -151,10 +138,10 @@
                             </button>
                         </div>
                         <div id="fsFilterMenu" class="hidden flex-col items-stretch gap-1.5 w-40">
-                            <button data-fsback class="fs-chip w-full text-white/90 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 text-xs font-bold">‹ Kembali</button>
+                            <button data-fsback class="fs-chip w-full text-white/90 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 text-xs font-bold inline-flex items-center justify-center gap-1"><x-icon name="chevron-left" class="w-4 h-4" /> Kembali</button>
                         </div>
                         <div id="fsTimerMenu" class="hidden flex-col items-stretch gap-1.5 w-40">
-                            <button data-fsback class="fs-chip w-full text-white/90 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 text-xs font-bold">‹ Kembali</button>
+                            <button data-fsback class="fs-chip w-full text-white/90 bg-white/15 hover:bg-white/25 rounded-full px-3 py-1.5 text-xs font-bold inline-flex items-center justify-center gap-1"><x-icon name="chevron-left" class="w-4 h-4" /> Kembali</button>
                         </div>
                     </div>
                     <button id="btnFsShutter" title="Jepret foto" class="shrink-0 w-20 h-20 rounded-full bg-brand-orange text-white flex items-center justify-center hover:bg-brand-orange-hover">
@@ -165,21 +152,26 @@
             <canvas id="captureCanvas" class="hidden"></canvas>
             <div class="mt-4 flex flex-wrap gap-3">
                 <button id="btnCapture" disabled class="bg-brand-orange disabled:opacity-40 text-white rounded-full px-8 py-3 font-semibold hover:bg-brand-orange-hover transition">Jepret Foto</button>
-                <button id="btnRetakeOne" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition">↺ Retake terakhir</button>
-                <button id="btnRetakeAll" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition">⟲ Ulangi semua</button>
+                <button id="btnRetakeOne" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition inline-flex items-center gap-2"><x-icon name="refresh" class="w-4 h-4" /> Retake terakhir</button>
+                <button id="btnRetakeAll" class="border border-gray-300 rounded-full px-6 py-3 font-semibold hover:bg-gray-100 transition inline-flex items-center gap-2"><x-icon name="refresh" class="w-4 h-4" /> Ulangi semua</button>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+                <button id="mirrorToggle" class="border border-gray-300 rounded-full px-5 py-2.5 text-sm font-semibold hover:border-brand-orange whitespace-nowrap" title="Aktifkan jika preview masih terbalik">Mirror: OFF — preview normal</button>
+                <p class="text-xs text-brand-muted"><span class="font-bold text-brand-text" id="visitorLabel">Pengunjung: -</span> <span class="mx-1">•</span> <span id="progressLabel">0 / 4 foto terisi</span></p>
             </div>
             <p id="captureError" class="hidden mt-3 text-sm text-red-600"></p>
         </div>
 
         {{-- Kanan: Preview strip (otomatis ikut pilihan format) --}}
         <aside class="bg-white rounded-3xl p-6 shadow-sm">
+            <div class="flex items-center gap-2 text-[11px] font-bold mb-4" id="stepBar"></div>
             <div class="flex items-center justify-between">
                 <p class="font-bold text-sm">Strip Preview</p>
                 <span id="previewLayoutBadge" class="text-xs font-bold bg-brand-orange text-white rounded-full px-3 py-1">2x2</span>
             </div>
             <p id="previewDesignLabel" class="mt-1 text-xs text-brand-muted">Desain: Polos</p>
             <canvas id="stripPreview" class="mt-4 w-full rounded-2xl border border-black/10"></canvas>
-            <button id="btnNext" disabled class="mt-4 bg-brand-dark disabled:opacity-40 text-white rounded-full py-3 w-full font-semibold hover:bg-black transition">Selanjutnya → Gabung & Simpan</button>
+            <button id="btnNext" disabled class="mt-4 bg-brand-dark disabled:opacity-40 text-white rounded-full py-3 w-full font-semibold hover:bg-black transition inline-flex items-center justify-center gap-2">Pilih Desain <x-icon name="arrow-right" class="w-4 h-4" /></button>
             <p class="mt-2 text-xs text-brand-muted">Setelah slot penuh, klik Selanjutnya untuk menggabung + mengirim ke server.</p>
         </aside>
     </div>
@@ -249,117 +241,7 @@
         }
     }
 
-    // Preload frame overlay & background agar preview langsung tampil saat desain dipilih
-    const frameCache = {};
-    const backgroundCache = {};
-    const detectedCache = {}; // hasil ukur otomatis lubang per template (kunci: id_total)
-    function invalidateDetected(id) {
-        Object.keys(detectedCache).forEach(k => { if (k.startsWith(id + '_')) delete detectedCache[k]; });
-    }
-    TEMPLATES.forEach(t => {
-        if (t.frame_url) {
-            const img = new Image();
-            img.onload = () => { frameCache[t.id] = img; invalidateDetected(t.id); if (String(state.templateId) === String(t.id)) drawStripPreview(); };
-            img.onerror = () => { delete frameCache[t.id]; };
-            img.src = t.frame_url;
-        }
-        if (t.background_url) {
-            const bg = new Image();
-            bg.onload = () => { backgroundCache[t.id] = bg; invalidateDetected(t.id); if (String(state.templateId) === String(t.id)) drawStripPreview(); };
-            bg.onerror = () => { delete backgroundCache[t.id]; };
-            bg.src = t.background_url;
-        }
-    });
-
-    // Ukur otomatis lubang foto pada gambar frame/background (transparan ATAU
-    // kotak putih) untuk template upload-an admin yang belum punya slots.
-    // Murni JS (canvas getImageData), tanpa library. Gagal → null (pakai grid baku).
-    function detectHoles(img, total) {
-        const fw = img.naturalWidth, fh = img.naturalHeight;
-        if (!fw || !fh) return null;
-        if (!Number.isInteger(total / 2) || total < 1) return null;
-        const aw = Math.min(fw, 360);
-        const ah = Math.max(1, Math.round(aw * fh / fw));
-        const cv = document.createElement('canvas');
-        cv.width = aw; cv.height = ah;
-        const cx = cv.getContext('2d', { willReadFrequently: true });
-        cx.drawImage(img, 0, 0, aw, ah);
-        let data;
-        try { data = cx.getImageData(0, 0, aw, ah).data; }
-        catch (e) { return null; }
-        const isHole = (x, y) => {
-            if (x < 0 || y < 0 || x >= aw || y >= ah) return false;
-            const i = (y * aw + x) * 4;
-            if (data[i + 3] < 128) return true;
-            return data[i] >= 215 && data[i + 1] >= 215 && data[i + 2] >= 215; // kotak terang
-        };
-        const holes = [];
-        const minH = ah * 0.07, minW = (aw / 2) * 0.55;
-        [Math.floor(aw / 4), Math.floor(3 * aw / 4)].forEach(px => {
-            const half = px < aw / 2 ? [0, Math.floor(aw / 2)] : [Math.floor(aw / 2), aw];
-            const runs = [];
-            let inRun = false, s = 0;
-            for (let y = 0; y < ah; y++) {
-                const t = isHole(px, y);
-                if (t && !inRun) { inRun = true; s = y; }
-                else if (!t && inRun) { inRun = false; runs.push([s, y]); }
-            }
-            if (inRun) runs.push([s, ah]);
-            runs.forEach(r => {
-                if ((r[1] - r[0]) < minH) return;
-                const ym = Math.floor((r[0] + r[1]) / 2);
-                let l = px; while (l > half[0] && isHole(l - 1, ym)) l--;
-                let rr = px; while (rr < half[1] - 1 && isHole(rr + 1, ym)) rr++;
-                if ((rr - l) < minW) return;
-                const midx = Math.floor((l + rr) / 2);
-                let t = r[0]; while (t > 0 && isHole(midx, t - 1)) t--;
-                let b = r[1]; while (b < ah - 1 && isHole(midx, b + 1)) b++;
-                holes.push([l, t, rr - l, b - t]);
-            });
-        });
-        let kept = holes;
-        if (kept.length > total) {
-            const areas = kept.map(hh => hh[2] * hh[3]).sort((a, b) => a - b);
-            const med = areas[Math.floor(areas.length / 2)];
-            kept = kept.filter(hh => (hh[2] * hh[3]) >= 0.55 * med);
-        }
-        if (kept.length !== total) return null;
-        kept.sort((a, b) => (a[1] - b[1]) || (a[0] - b[0]));
-        const k = fw / aw;
-        return { fw, fh, holes: kept.map(hh => [Math.round(hh[0] * k), Math.round(hh[1] * k), Math.round(hh[2] * k), Math.round(hh[3] * k)]) };
-    }
-
-    function selectedTemplate() {
-        return TEMPLATES.find(t => String(t.id) === String(state.templateId)) || null;
-    }
-
-    const LAYOUTS = {
-        '2x2': { cols: 2, rows: 2, total: 4 },
-        '2x3': { cols: 2, rows: 3, total: 6 },
-        'receipt': { cols: 2, rows: 2, total: 4 }, // 2 strip kembar, tiap strip 1 kolom × 2 foto
-    };
-
-    // Foto mengikuti lubang desain (bukan grid baku) bila tersedia:
-    // 1) slots presisi dari database, 2) hasil ukur otomatis gambarnya.
-    // Syarat: jumlah lubang harus sama dengan total slot layout aktif.
-    function slottedTemplate() {
-        const tpl = selectedTemplate();
-        if (!tpl || !LAYOUTS[state.layout]) return null;
-        const total = LAYOUTS[state.layout].total;
-        if (tpl.slots && Array.isArray(tpl.slots.holes) && tpl.slots.fw && tpl.slots.fh
-            && tpl.slots.holes.length === total) return tpl.slots;
-        const key = tpl.id + '_' + total;
-        if (!(key in detectedCache)) {
-            const img = (tpl.frame_url && frameCache[tpl.id]) || (tpl.background_url && backgroundCache[tpl.id]) || null;
-            detectedCache[key] = (img && img.complete && img.naturalWidth) ? detectHoles(img, total) : null;
-        }
-        return detectedCache[key];
-    }
-
-    function requiredTotal() {
-        const s = slottedTemplate();
-        return s ? s.holes.length : LAYOUTS[state.layout].total;
-    }
+    @include('components.strip-engine')
 
     function setActive(selector, btn) {
         document.querySelectorAll(selector).forEach(b => {
@@ -408,31 +290,7 @@
         setActive('.layout-btn', b);
         render();
     }));
-    document.querySelectorAll('.design-btn').forEach(b => b.addEventListener('click', () => {
-        const id = b.dataset.template || '';
-        if (id === 'receipt') {
-            // Tema 2 strip struk kembar — digambar prosedural di canvas
-            state.builtin = 'receipt';
-            state.templateId = null;
-            if (state.layout !== 'receipt') {
-                state.layout = 'receipt';
-                state.shots = [];
-                syncLayoutButtons();
-            }
-        } else {
-            state.builtin = 'plain';
-            const tpl = TEMPLATES.find(t => String(t.id) === String(id)) || null;
-            state.templateId = tpl ? tpl.id : null;
-            // Desain membawa formatnya sendiri → preview + slot otomatis menyesuaikan
-            if (tpl && tpl.layout_type !== state.layout) {
-                state.layout = tpl.layout_type;
-                state.shots = [];
-                syncLayoutButtons();
-            }
-        }
-        markDesignActive(b);
-        render();
-    }));
+    // (Pilih desain pindah ke halaman tersendiri setelah slot penuh.)
     document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', () => {
         state.filter = b.dataset.filter;
         video.style.filter = state.filter;
@@ -520,7 +378,7 @@
             ctx.scale(-1, 1);
         }
         ctx.drawImage(video, 0, 0, w, h);
-        return captureCanvas.toDataURL('image/png');
+        return captureCanvas.toDataURL('image/jpeg', 0.9);
     }
 
     async function startCapture() {
@@ -632,6 +490,138 @@
     document.querySelectorAll('[data-fsback]').forEach(b => b.addEventListener('click', () => fsShowMenu('main')));
     document.addEventListener('fullscreenchange', () => { if (document.fullscreenElement) fsShowMenu('main'); });
 
+    // ===== Sidebar vertikal + pop-up sub-menu (Strip / Filter / Timer) =====
+    // Isi pop-up DIBANGUN dari tombol picker lama (sumber tunggal, pola yang sama
+    // seperti chip fullscreen): klik di pop-up didelegasikan ke .click() tombol
+    // aslinya agar seluruh logika lama (state, reset shots, render, setActive)
+    // ikut jalan tanpa duplikasi. Sinkron tampilan aktif dibaca dari `state`
+    // lewat syncToolUI() yang dipanggil di render().
+    const toolRailWrap = document.getElementById('toolRailWrap');
+    const toolPopup = document.getElementById('toolPopup');
+    const toolPopupTitle = document.getElementById('toolPopupTitle');
+    const toolPopupSub = document.getElementById('toolPopupSub');
+    const stripSection = document.getElementById('toolPopupBodyStrip');
+    const stripCards = document.getElementById('stripFormatCards');
+    const filterBody = document.getElementById('toolPopupBodyFilter');
+    const timerBody = document.getElementById('toolPopupBodyTimer');
+    let openTool = null;
+    const TOOL_META = {
+        strip: { title: 'Pilih Strip', sub: 'Format hasil foto: 2 kolom, baris menyesuaikan.' },
+        filter: { title: 'Pilih Filter', sub: 'Efek langsung terlihat di kamera.' },
+        timer: { title: 'Atur Timer', sub: 'Jeda hitung mundur sebelum jepret.' },
+    };
+
+    // --- Pop-up Strip: kartu layout dari .layout-btn yang sudah ada ---
+    document.querySelectorAll('#layoutPicker .layout-btn').forEach(orig => {
+        const lay = orig.dataset.layout; // '2x2' | '2x3'
+        const parts = lay.split('x');
+        const cols = parseInt(parts[0], 10) || 2, rows = parseInt(parts[1], 10) || 2;
+        const total = (typeof LAYOUTS !== 'undefined' && LAYOUTS[lay]) ? LAYOUTS[lay].total : cols * rows;
+        const card = document.createElement('button');
+        card.dataset.stripLayout = lay;
+        card.className = 'strip-card w-full flex items-center gap-3 rounded-xl border border-gray-300 p-3 text-left transition hover:border-brand-orange';
+        let cells = '';
+        for (let i = 0; i < cols * rows; i++) cells += '<span class="rounded-[4px] bg-current opacity-25"></span>';
+        card.innerHTML = '<span class="grid gap-1 w-12 h-14 shrink-0" style="grid-template-columns:repeat(' + cols + ',1fr);grid-template-rows:repeat(' + rows + ',1fr)">' + cells + '</span>'
+            + '<span><span class="block text-sm font-bold">Strip ' + lay + '</span>'
+            + '<span class="block text-xs opacity-70">' + total + ' foto</span></span>';
+        card.addEventListener('click', () => { orig.click(); closeTool(); });
+        stripCards.appendChild(card);
+    });
+
+    // --- Pop-up Filter: grid lingkaran dari .filter-btn yang sudah ada ---
+    // Lingkaran preview memakai string filter yang SAMA dari kode (thumbnail
+    // gradasi diberi style filter identik agar efeknya terlihat langsung).
+    const FILTER_THUMB = 'linear-gradient(135deg,#D95B32 0%,#F5C518 35%,#2E9E5B 65%,#3B82F6 100%)';
+    document.querySelectorAll('#filterPicker .filter-btn').forEach(orig => {
+        const f = orig.dataset.filter;
+        const name = orig.textContent.trim();
+        const item = document.createElement('button');
+        item.dataset.filterVal = f;
+        item.className = 'f-item flex flex-col items-center gap-1.5';
+        item.title = name;
+        item.innerHTML = '<span class="f-dot block w-14 h-14 rounded-full border-2 border-gray-300 transition hover:border-brand-orange" style="background:' + FILTER_THUMB + ';filter:' + f + '"></span>'
+            + '<span class="f-label text-[11px] font-semibold leading-tight text-center">' + name + '</span>';
+        item.addEventListener('click', () => { orig.click(); });
+        filterBody.appendChild(item);
+    });
+
+    // --- Pop-up Timer: pil durasi dari .timer-btn yang sudah ada ---
+    document.querySelectorAll('#timerPicker .timer-btn').forEach(orig => {
+        const pill = document.createElement('button');
+        pill.dataset.timerVal = orig.dataset.timer;
+        pill.className = 't-pill flex-1 rounded-xl border border-gray-300 py-3 text-sm font-bold transition hover:border-brand-orange';
+        pill.textContent = orig.textContent.trim();
+        pill.addEventListener('click', () => { orig.click(); closeTool(); });
+        timerBody.appendChild(pill);
+    });
+
+    function paintRail() {
+        document.querySelectorAll('.tool-btn').forEach(b => {
+            const on = b.dataset.tool === openTool;
+            b.classList.toggle('bg-brand-orange', on);
+            b.classList.toggle('text-white', on);
+            b.classList.toggle('text-brand-text', !on);
+            b.classList.toggle('hover:bg-brand-card-light', !on);
+        });
+    }
+    function closeTool() {
+        openTool = null;
+        toolPopup.classList.add('hidden');
+        paintRail();
+    }
+    function openToolPop(tool) {
+        if (openTool === tool) { closeTool(); return; }
+        openTool = tool;
+        stripSection.classList.toggle('hidden', tool !== 'strip');
+        filterBody.classList.toggle('hidden', tool !== 'filter');
+        timerBody.classList.toggle('hidden', tool !== 'timer');
+        toolPopupTitle.textContent = TOOL_META[tool].title;
+        toolPopupSub.textContent = TOOL_META[tool].sub;
+        toolPopup.classList.remove('hidden');
+        paintRail();
+        syncToolUI();
+    }
+    document.querySelectorAll('.tool-btn').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); openToolPop(b.dataset.tool); }));
+    document.getElementById('toolPopupClose').addEventListener('click', closeTool);
+    document.addEventListener('click', (e) => { if (openTool && !toolRailWrap.contains(e.target)) closeTool(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeTool(); });
+
+    // Sinkron nilai + status aktif (dibaca dari state mutakhir, dipanggil di render()).
+    function syncToolUI() {
+        const setCap = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+        setCap('toolValStrip', state.layout);
+        const fBtn = document.querySelector('#filterPicker .filter-btn[data-filter="' + CSS.escape(state.filter) + '"]');
+        setCap('toolValFilter', fBtn ? fBtn.textContent.trim() : state.filter);
+        setCap('toolValTimer', state.timer + 's');
+        stripCards.querySelectorAll('.strip-card').forEach(c => {
+            const on = c.dataset.stripLayout === state.layout;
+            c.classList.toggle('border-brand-orange', on);
+            c.classList.toggle('bg-brand-orange/10', on);
+            c.classList.toggle('text-brand-orange', on);
+            c.classList.toggle('border-gray-300', !on);
+            c.classList.toggle('text-brand-text', !on);
+        });
+        filterBody.querySelectorAll('.f-item').forEach(it => {
+            const on = it.dataset.filterVal === state.filter;
+            const dot = it.querySelector('.f-dot'), lab = it.querySelector('.f-label');
+            dot.classList.toggle('border-brand-orange', on);
+            dot.classList.toggle('scale-110', on);
+            dot.classList.toggle('shadow-lg', on);
+            dot.classList.toggle('border-gray-300', !on);
+            lab.classList.toggle('text-brand-orange', on);
+        });
+        timerBody.querySelectorAll('.t-pill').forEach(p => {
+            const on = parseInt(p.dataset.timerVal, 10) === state.timer;
+            p.classList.toggle('bg-brand-orange', on);
+            p.classList.toggle('text-white', on);
+            p.classList.toggle('border-brand-orange', on);
+            p.classList.toggle('border-gray-300', !on);
+        });
+    }
+    paintRail();
+    syncToolUI();
+
     btnFsShutter?.addEventListener('click', async () => {
         if (state.busy || !state.stream) return;
         if (state.shots.length >= requiredTotal()) return;
@@ -655,24 +645,34 @@
         btnCapture.disabled = !state.stream;
     });
 
-    // Daftar desain hanya menampilkan yang sesuai format terpilih:
-    // Polos (universal) selalu tampil; Receipt dihitung anggota kelompok 2x2.
-    function filterDesigns() {
-        let n = 0;
-        document.querySelectorAll('.design-btn').forEach(b => {
-            const tplId = b.dataset.template || '';
-            const lay = b.dataset.layout || '';
-            // Receipt anggota kelompok 2x2: tampil saat format 2x2, sembunyi saat 2x3.
-            const show = tplId === '' || lay === state.layout || (lay === 'receipt' && state.layout === '2x2');
-            b.classList.toggle('hidden', !show);
-            if (show) n++;
-        });
-        const el = document.getElementById('designCount');
-        if (el) el.textContent = n + ' pilihan utk ' + (state.layout === 'receipt' ? 'Receipt' : state.layout);
+    // (Daftar desain pindah ke halaman tersendiri; filter per format ada di sana.)
+
+    // (tahap 2-3 pindah ke halaman desain)
+    // Indikator tahap di halaman camera (tahap 1 Jepret; tahap 2-3 di halaman desain).
+    function paintSteps() {
+        const full = state.shots.length >= requiredTotal();
+        const bar = document.getElementById('stepBar');
+        if (bar) {
+            const steps = [[1, 'Jepret'], [2, 'Desain'], [3, 'Simpan']];
+            let html = '';
+            steps.forEach((st, i) => {
+                const n = st[0];
+                const done = (n === 1 && full);
+                const active = (n === 1 && !full);
+                html += '<span class="flex items-center gap-1.5' + ((active || done) ? '' : ' opacity-40') + '">'
+                    + '<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold '
+                    + (done ? 'bg-brand-orange text-white' : (active ? 'border-2 border-brand-orange text-brand-orange' : 'bg-brand-card-light text-brand-muted')) + '">'
+                    + (done ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' : n) + '</span>'
+                    + '<span class="' + ((active || done) ? 'text-brand-text' : 'text-brand-muted') + '">' + st[1] + '</span></span>';
+                if (i < steps.length - 1) html += '<span class="flex-1 h-[2px] rounded ' + ((n === 1 && full) ? 'bg-brand-orange' : 'bg-black/10') + '"></span>';
+            });
+            bar.innerHTML = html;
+        }
     }
 
     function render() {
-        filterDesigns();
+        syncToolUI(); // sidebar + pop-up ikut status state mutakhir
+        paintSteps(); // indikator tahap 1 (tahap 2-3 di halaman desain)
         progressLabel.textContent = state.shots.length + ' / ' + requiredTotal() + ' foto terisi';
         if (previewLayoutBadge) previewLayoutBadge.textContent = state.layout === 'receipt' ? 'Receipt' : state.layout;
         let designName = 'Polos';
@@ -686,319 +686,46 @@
         drawStripPreview(); // preview kanan langsung digambar ulang sesuai pilihan strip + desain
     }
 
-    // ===== Mesin gambar strip (dipakai preview & file simpanan) =====
-    // Pola barcode deterministik agar preview dan hasil simpan identik
-    const BARCODE_BARS = (() => {
-        let seed = 20260915;
-        const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
-        const bars = [];
-        for (let i = 0; i < 64; i++) bars.push(1 + Math.floor(rnd() * 4));
-        return bars;
-    })();
 
-    function isReceipt() { return state.builtin === 'receipt'; }
-
-    // Geometri strip untuk lebar W (s = skala, preview 600px / simpan 900px)
-    function geomFor(W) {
-        const slots = slottedTemplate();
-        if (slots) {
-            // Kanvas mengikuti rasio asli frame (1200x1800) agar overlay
-            // tidak melar. Foto sedikit DILEBARKAN (+3px) bila ada frame
-            // overlay di atasnya (tepi terselip di bawah bingkai), tapi
-            // DIKECILKAN (-3px) bila tanpa frame agar tidak menutupi
-            // border milik desain background.
-            const k = W / slots.fw;
-            const hasFrame = !!(selectedTemplate() && selectedTemplate().frame_url);
-            const pad = hasFrame ? 3 : -3;
-            const holes = slots.holes.map(h => ({
-                x: (h[0] - pad) * k,
-                y: (h[1] - pad) * k,
-                w: (h[2] + pad * 2) * k,
-                h: (h[3] + pad * 2) * k,
-            }));
-            // radius sudut mengikuti lubang desain (px frame → px kanvas);
-            // hasil ukur otomatis (tanpa radius) pakai default 12px frame.
-            const radius = (slots.radius != null ? slots.radius : 12) * k;
-            return { slotted: true, s: k, holes, radius, H: slots.fh * k };
-        }
-        const s = W / 600;
-        if (state.layout === 'receipt') {
-            // Dua strip struk kembar kiri-kanan; tiap strip 1 kolom × 2 foto
-            const pad = 16 * s, gutter = 24 * s, ip = 14 * s, gap = 12 * s;
-            const colW = (W - pad * 2 - gutter) / 2;
-            const cellW = colW - ip * 2;
-            const cellH = cellW * 0.75;
-            const headerH = 250 * s, footerH = 150 * s;
-            const H = pad + headerH + cellH * 2 + gap + footerH + pad;
-            return { double: true, cols: 2, rows: 2, s, pad, gutter, ip, gap, colW, cellW, cellH, headerH, footerH, radius: 3 * s, H };
-        }
-        const { cols, rows } = LAYOUTS[state.layout];
-        const pad = 20 * s, gap = 12 * s;
-        const cellW = (W - pad * 2 - gap * (cols - 1)) / cols;
-        const cellH = cellW * 0.75;
-        const headerH = 110 * s, footerH = 90 * s;
-        const H = headerH + rows * cellH + (rows - 1) * gap + footerH + pad * 2;
-        return { double: false, cols, rows, s, pad, gap, cellW, cellH, headerH, footerH, radius: 12 * s, H };
-    }
-
-    function dashedLine(ctx, x1, x2, y, s) {
-        ctx.save();
-        ctx.strokeStyle = '#1C1C1C';
-        ctx.lineWidth = Math.max(1, 1.5 * s);
-        ctx.setLineDash([6 * s, 4 * s]);
-        ctx.beginPath();
-        ctx.moveTo(x1, y);
-        ctx.lineTo(x2, y);
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    // Kecilkan font sampai teks muat di maxW (jamin tidak meluber keluar kolom)
-    function fitFont(ctx, text, maxW, startPx, family, weight) {
-        let px = startPx;
-        const apply = (p) => { ctx.font = (weight ? weight + ' ' : '') + p + 'px ' + family; };
-        apply(px);
-        while (px > 6 && ctx.measureText(text).width > maxW) {
-            px -= 1;
-            apply(px);
-        }
-        return px;
-    }
-
-    // Kop satu kolom struk (dipakai tiap strip kembar kiri & kanan)
-    function paintReceiptHead(ctx, x0, colW, topY, g) {
-        const s = g.s, ip = g.ip, cx = x0 + colW / 2;
-        const qtyX = x0 + ip + 4 * s;          // awal kolom QTY
-        const itemX = x0 + ip + 82 * s;        // awal kolom ITEM
-        const rightEdge = x0 + colW - ip - 4 * s;
-        const qtyCX = qtyX + 34 * s;           // tengah kolom QTY
-        ctx.fillStyle = '#111';
-        ctx.textAlign = 'center';
-        fitFont(ctx, '*****RECEIPT*****', colW - ip * 2 - 4 * s, 40 * s, '"Playfair Display", Georgia, serif', '800');
-        ctx.fillText('*****RECEIPT*****', cx, topY + 46 * s);
-        dashedLine(ctx, x0 + ip, x0 + colW - ip, topY + 62 * s, s);
-        ctx.font = (22 * s) + 'px "Courier New", monospace';
-        ctx.fillText('QTY', qtyCX, topY + 88 * s);
-        ctx.textAlign = 'left';
-        ctx.fillText('ITEM', itemX, topY + 88 * s);
-        ctx.textAlign = 'center';
-        dashedLine(ctx, x0 + ip, x0 + colW - ip, topY + 102 * s, s);
-        const rows = [
-            ['7', 'HOURS A DAY THINKING ABOUT YOU'],
-            ['24', 'DAYS IN A WEEK'],
-            ['365', 'TIRED ALL THE TIME'],
-        ];
-        rows.forEach((r, i) => {
-            const y = topY + (132 + i * 34) * s;
-            fitFont(ctx, r[1], rightEdge - itemX, 19 * s, '"Courier New", monospace', '');
-            ctx.textAlign = 'center';
-            ctx.fillText(r[0], qtyCX, y);
-            ctx.textAlign = 'left';
-            ctx.fillText(r[1], itemX, y);
-        });
-        ctx.textAlign = 'center';
-    }
-
-    // Latar + kop: cream HOLD' MOMENT atau kertas struk (tunggal/ganda)
-    function paintChrome(ctx, W, g) {
-        const s = g.s, pad = g.pad, cx = W / 2;
-        ctx.fillStyle = g.double ? '#FBFAF6' : '#F6F4EE';
-        ctx.fillRect(0, 0, W, g.H);
-        if (g.double) {
-            for (let k = 0; k < 2; k++) {
-                paintReceiptHead(ctx, g.pad + k * (g.colW + g.gutter), g.colW, g.pad, g);
-            }
-            return;
-        }
-        ctx.fillStyle = '#1C1C1C';
-        ctx.font = '800 ' + (34 * s) + 'px "Playfair Display", Georgia, serif';
-        ctx.textAlign = 'center';
-        ctx.fillText("HOLD' MOMENT", cx, 55 * s);
-        ctx.fillStyle = '#D95B32';
-        ctx.font = '600 ' + (14 * s) + 'px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText('• • •  PHOTOSTRIP  • • •', cx, 80 * s);
-    }
-
-    // Satu foto cover-fit ke sel
-    function drawCover(ctx, im, x, y, w, h, r) {
-        const ir = im.width / im.height, cr = w / h;
-        let sw, sh, sx, sy;
-        if (ir > cr) { sh = im.height; sw = sh * cr; sx = (im.width - sw) / 2; sy = 0; }
-        else { sw = im.width; sh = sw / cr; sx = 0; sy = (im.height - sh) / 2; }
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(x, y, w, h, r);
-        ctx.clip();
-        ctx.drawImage(im, sx, sy, sw, sh, x, y, w, h);
-        ctx.restore();
-    }
-
-    // Sel foto — strip ganda: foto 1-2 kiri, 3-4 kanan; slot kosong = kertas
-    function paintPhotos(ctx, g, imgs) {
-        if (g.double) {
-            for (let k = 0; k < 2; k++) {
-                for (let j = 0; j < 2; j++) {
-                    const im = imgs[k * 2 + j];
-                    if (!im) continue;
-                    const x = g.pad + k * (g.colW + g.gutter) + g.ip;
-                    const y = g.pad + g.headerH + j * (g.cellH + g.gap);
-                    drawCover(ctx, im, x, y, g.cellW, g.cellH, g.radius);
-                }
-            }
-            return;
-        }
-        imgs.forEach((im, i) => {
-            if (!im) return;
-            const c = i % g.cols, r = Math.floor(i / g.cols);
-            const x = g.pad + c * (g.cellW + g.gap);
-            const y = g.headerH + r * (g.cellH + g.gap);
-            drawCover(ctx, im, x, y, g.cellW, g.cellH, g.radius);
-        });
-    }
-
-    function paintBarcode(ctx, cx, y, h, s, maxW) {
-        const sum = BARCODE_BARS.reduce((a, b) => a + b, 0) + BARCODE_BARS.length - 1;
-        let unit = 2.2 * s;
-        if (maxW) unit = Math.min(unit, maxW / sum);
-        const totalW = sum * unit;
-        let x = cx - totalW / 2;
-        ctx.fillStyle = '#111';
-        BARCODE_BARS.forEach(w => {
-            ctx.fillRect(x, y, w * unit, h);
-            x += (w + 1) * unit;
-        });
-    }
-
-    // Kaki strip: biodata pengunjung atau THANK YOU + barcode tiap strip kembar
-    function paintFooter(ctx, W, g) {
-        const s = g.s, cx = W / 2, H = g.H;
-        ctx.textAlign = 'center';
-        if (g.double) {
-            for (let k = 0; k < 2; k++) {
-                const ccx = g.pad + k * (g.colW + g.gutter) + g.colW / 2;
-                const fy = g.pad + g.headerH + g.cellH * 2 + g.gap;
-                ctx.fillStyle = '#111';
-                fitFont(ctx, '*******THANK YOU!*******', g.colW - g.ip * 2 - 4 * s, 22 * s, '"Courier New", monospace', '');
-                ctx.fillText('*******THANK YOU!*******', ccx, fy + 30 * s);
-                paintBarcode(ctx, ccx, fy + 44 * s, 62 * s, s, g.colW - g.ip * 2);
-                ctx.fillStyle = '#737373';
-                ctx.font = '500 ' + (14 * s) + 'px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText((state.visitor.name || 'Pengunjung') + ' • ' + (state.visitor.social || '@sosmed'), ccx, fy + 128 * s);
-            }
-            return;
-        }
-        ctx.fillStyle = '#1C1C1C';
-        ctx.font = '700 ' + (20 * s) + 'px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText(state.visitor.name || 'Pengunjung', cx, H - 55 * s);
-        ctx.fillStyle = '#737373';
-        ctx.font = '500 ' + (15 * s) + 'px "Plus Jakarta Sans", sans-serif';
-        ctx.fillText((state.visitor.social || '@sosmed') + '  •  ' + new Date().toLocaleDateString('id-ID'), cx, H - 30 * s);
-    }
-
-    // Frame PNG upload-an admin (digambar paling atas bila ada & cocok)
-    function paintFrameOverlay(ctx, W, H) {
-        const fr = state.templateId ? frameCache[state.templateId] : null;
-        if (fr && fr.complete && fr.naturalWidth) {
-            ctx.drawImage(fr, 0, 0, W, H);
-        }
-    }
-
-    function paintStrip(canvas, W, imgs) {
-        const g = geomFor(W);
-        canvas.width = W;
-        canvas.height = g.H;
-        const ctx = canvas.getContext('2d');
-        if (g.slotted) {
-            // Background digambar utuh mengikuti rasio aslinya (tidak melar);
-            // frame transparan menutupi penuh kecuali lubang; keduanya opsional.
-            // Tiap foto digambar tepat di lubangnya (milik background kotak
-            // putih/hitam maupun lubang transparan frame).
-            const bg = state.templateId ? backgroundCache[state.templateId] : null;
-            if (bg && bg.complete && bg.naturalWidth) {
-                ctx.drawImage(bg, 0, 0, W, g.H);
-            } else {
-                ctx.fillStyle = '#1C1C1C';
-                ctx.fillRect(0, 0, W, g.H);
-            }
-            imgs.forEach((im, i) => {
-                const hole = g.holes[i];
-                if (!im || !hole) return;
-                drawCover(ctx, im, hole.x, hole.y, hole.w, hole.h, g.radius);
-            });
-            paintFrameOverlay(ctx, W, g.H);
-            return;
-        }
-        const bg = state.templateId ? backgroundCache[state.templateId] : null;
-        const hasBg = bg && bg.complete && bg.naturalWidth;
-        if (hasBg) {
-            // Background upload admin — 100% persis seperti file (pixel sky, dll.) cover seluruh strip
-            ctx.drawImage(bg, 0, 0, W, g.H);
-        } else {
-            paintChrome(ctx, W, g);
-        }
-        paintPhotos(ctx, g, imgs);
-        if (!hasBg) paintFooter(ctx, W, g);
-        // Jika pakai background, visitor name tidak digambar ulang agar 100% sesuai file upload
-        // (data tetap tersimpan di DB dan tampil di halaman result/admin)
-        paintFrameOverlay(ctx, W, g.H);
-    }
-
-    const loadShot = (src) => new Promise((res) => {
-        const im = new Image();
-        im.onload = () => res(im);
-        im.onerror = () => res(null);
-        im.src = src;
-    });
-
-    function drawStripPreview() {
-        // Geometri dihitung ulang saat gambar selesai dimuat (layout bisa berubah)
-        Promise.all(state.shots.map(loadShot)).then((imgs) => paintStrip(stripPreview, 600, imgs));
-    }
-
-    function fullResStrip() {
-        // 900px + JPEG 0.75 → ~400KB, aman untuk Railway (limit 4MB)
-        return Promise.all(state.shots.map(loadShot)).then((imgs) => {
-            const cv = document.createElement('canvas');
-            paintStrip(cv, 900, imgs);
-            return cv.toDataURL('image/jpeg', 0.75);
-        });
-    }
-
-    btnNext.addEventListener('click', async () => {
+    // Alur 2 halaman: slot penuh → titip foto + biodata + format di
+    // sessionStorage, lanjut ke halaman pilih desain (desain digabung + POST
+    // simpanan dilakukan di sana). JPEG ±200KB/foto → 6 foto aman < 5MB.
+    const DESAIN_URL = "{{ route('photo.desain') }}";
+    btnNext.addEventListener('click', () => {
         if (btnNext.disabled || state.busy) return;
-        state.busy = true;
-        btnNext.textContent = 'Menyimpan...';
         errBox.classList.add('hidden');
         try {
-            const image = await fullResStrip();
-            console.log('strip size', Math.round(image.length/1024), 'KB');
-            if (image.length > 4 * 1024 * 1024) throw new Error('Gambar kebesaran, coba retake dengan kualitas lebih kecil.');
-            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            const res = await fetch("{{ route('photo.save') }}", {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
-                body: JSON.stringify({
-                    visitor_name: state.visitor.name,
-                    visitor_social: state.visitor.social,
-                    template_id: state.templateId,
-                    layout_type: state.layout,
-                    image: image,
-                }),
-            });
-            const text = await res.text();
-            let data;
-            try { data = JSON.parse(text); } catch { throw new Error('Server error ('+res.status+'): '+text.slice(0,300)); }
-            if (!res.ok) throw new Error(data.message || 'Gagal menyimpan ('+res.status+')');
-            window.location.href = data.redirect;
+            sessionStorage.setItem('holdmoment_stash', JSON.stringify({
+                shots: state.shots,
+                visitor: state.visitor,
+                layout: state.layout,
+                savedAt: Date.now(),
+            }));
         } catch (e) {
-            console.error(e);
-            errBox.textContent = e.message.includes('Failed to fetch') ? 'Gagal terhubung ke server. Cek koneksi / coba lagi. Detail: '+e.message : e.message;
+            errBox.textContent = 'Gagal lanjut: penyimpanan browser penuh. Coba retake ulang.';
             errBox.classList.remove('hidden');
-            state.busy = false;
-            btnNext.textContent = 'Selanjutnya → Gabung & Simpan';
+            return;
         }
+        window.location.href = DESAIN_URL;
     });
+
+    // Kembali dari halaman desain ("Ganti Foto"): pulihkan jepretan + biodata + format.
+    // Stash kedaluwarsa 3 jam agar kunjungan lama tidak terbawa.
+    try {
+        const stash = JSON.parse(sessionStorage.getItem('holdmoment_stash') || 'null');
+        if (stash && Array.isArray(stash.shots) && stash.shots.length
+            && stash.savedAt && (Date.now() - stash.savedAt) < 3 * 3600 * 1000) {
+            state.shots = stash.shots;
+            if (stash.visitor) state.visitor = stash.visitor;
+            if (stash.layout && LAYOUTS[stash.layout]) state.layout = stash.layout;
+            const nm = document.getElementById('visitorName'), sc = document.getElementById('visitorSocial');
+            if (nm && state.visitor.name) nm.value = state.visitor.name;
+            if (sc && state.visitor.social) sc.value = state.visitor.social;
+            syncLayoutButtons();
+            const lb = document.querySelector('.layout-btn[data-layout="' + state.layout + '"]');
+            if (lb) setActive('.layout-btn', lb);
+        }
+    } catch (e) {}
 
     render();
 })();

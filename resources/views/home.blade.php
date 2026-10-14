@@ -14,7 +14,7 @@
             <a href="{{ route('how-it-works') }}" class="border border-brand-text/20 rounded-full px-6 py-3 font-semibold hover:bg-white transition">Cara kerja</a>
         </div>
         <div class="mt-6 flex items-center gap-4 text-sm text-brand-muted">
-            <span>★ {{ $stats['rating'] }} rating</span>
+            <span class="inline-flex items-center gap-1"><x-icon name="star" class="w-4 h-4 text-brand-orange" /> {{ $stats['rating'] }} rating</span>
             <span>•</span>
             <span>{{ number_format($stats['photos'], 0, ',', '.') }}+ foto diambil</span>
         </div>
@@ -49,17 +49,17 @@
     <h2 class="font-serif font-bold text-2xl md:text-3xl text-center">Kenapa HOLD' MOMENT?</h2>
     <div class="mt-8 grid md:grid-cols-3 gap-5">
         <div class="bg-white rounded-3xl p-8 shadow-sm">
-            <div class="w-12 h-12 rounded-full bg-brand-orange text-white flex items-center justify-center text-xl">✦</div>
+            <div class="w-12 h-12 rounded-full bg-brand-orange text-white flex items-center justify-center"><x-icon name="spark" class="w-6 h-6" /></div>
             <h3 class="font-bold mt-4 text-lg">Tanpa aplikasi tambahan</h3>
             <p class="text-brand-muted mt-2 text-sm">Cukup buka browser, izinkan kamera, langsung jepret. Tidak perlu install apapun.</p>
         </div>
         <div class="bg-white rounded-3xl p-8 shadow-sm">
-            <div class="w-12 h-12 rounded-full bg-brand-orange text-white flex items-center justify-center text-xl">▦</div>
+            <div class="w-12 h-12 rounded-full bg-brand-orange text-white flex items-center justify-center"><x-icon name="grid" class="w-6 h-6" /></div>
             <h3 class="font-bold mt-4 text-lg">Pilihan template beragam</h3>
             <p class="text-brand-muted mt-2 text-sm">Format 2x2 dan 2x3 dengan frame overlay yang bisa dikustom admin.</p>
         </div>
         <div class="bg-white rounded-3xl p-8 shadow-sm">
-            <div class="w-12 h-12 rounded-full bg-brand-orange text-white flex items-center justify-center text-xl">⚡</div>
+            <div class="w-12 h-12 rounded-full bg-brand-orange text-white flex items-center justify-center"><x-icon name="bolt" class="w-6 h-6" /></div>
             <h3 class="font-bold mt-4 text-lg">Hasil instan</h3>
             <p class="text-brand-muted mt-2 text-sm">Cetak, simpan sebagai foto/PDF, atau bagikan ke media sosial dalam sekali klik.</p>
         </div>

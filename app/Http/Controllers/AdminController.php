@@ -40,6 +40,13 @@ class AdminController extends Controller
         return view('admin.photos', compact('photos'));
     }
 
+    public function users(): View
+    {
+        $users = User::latest()->paginate(15);
+
+        return view('admin.users', compact('users'));
+    }
+
     public function deletePhoto(int $id): RedirectResponse
     {
         DB::transaction(function () use ($id) {

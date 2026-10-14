@@ -1,18 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', "Edit Template — Admin HOLD' MOMENT")
 
-@section('content')
-<section class="max-w-2xl mx-auto px-6 pt-10 pb-14">
-    <div class="flex items-center justify-between">
-        <h1 class="font-serif font-extrabold text-3xl">Edit Template</h1>
-        <a href="{{ route('admin.templates') }}" class="text-sm text-brand-orange font-semibold">← Kembali</a>
+@section('admin-content')
+    <div>
+        <h1 class="font-serif font-extrabold text-3xl md:text-4xl">Edit Template</h1>
+        <p class="text-brand-muted text-sm mt-1">{{ $template->name }} • {{ $template->layout_type }}</p>
     </div>
-    @if($errors->any())
-        <div class="mt-4 bg-red-50 text-red-700 rounded-xl px-4 py-3 text-sm">
-            <ul class="list-disc ml-5">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
 
     <div class="mt-6 bg-white rounded-3xl p-6 shadow-sm space-y-6">
         <div class="grid grid-cols-2 gap-4">
@@ -62,8 +56,10 @@
             @if($template->frame_image)
                 <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="clear_frame" value="1"> Hapus frame saat simpan</label>
             @endif
-            <button class="bg-brand-orange text-white rounded-full px-8 py-2.5 font-semibold hover:bg-brand-orange-hover">Simpan Perubahan</button>
+            <div class="flex flex-wrap gap-3 pt-1">
+                <button class="bg-brand-orange text-white rounded-full px-8 py-2.5 font-semibold hover:bg-brand-orange-hover transition">Simpan Perubahan</button>
+                <a href="{{ route('admin.templates') }}" class="border border-gray-300 rounded-full px-8 py-2.5 font-semibold hover:bg-gray-100 transition">Batal</a>
+            </div>
         </form>
     </div>
-</section>
 @endsection

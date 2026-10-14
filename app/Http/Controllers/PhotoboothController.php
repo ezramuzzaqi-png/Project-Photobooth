@@ -11,10 +11,12 @@ use Illuminate\View\View;
 
 class PhotoboothController extends Controller
 {
-    public function camera(): View
+    /**
+     * Payload desain strip (template DB + URL publik) — dipakai halaman
+     * camera (preload) dan halaman pilih desain. Format aman saat DB mati.
+     */
+    private function designPayload(): array
     {
-        // Mode demo: kalau DB mati, halaman tetap kebuka dengan desain kosong
-        // biar siswa bisa belajar WebRTC/Canvas tanpa 500 error.
         try {
             // Hanya desain yang layout-nya didukung halaman camera (2x2 / 2x3 / receipt)
             $templates = Template::whereIn('layout_type', ['2x2', '2x3', 'receipt'])
@@ -35,7 +37,26 @@ class PhotoboothController extends Controller
             'slots' => $t->slots,
         ])->values();
 
+        return [$templates, $designs];
+    }
+
+    public function camera(): View
+    {
+        // Mode demo: kalau DB mati, halaman tetap kebuka dengan desain kosong
+        // biar siswa bisa belajar WebRTC/Canvas tanpa 500 error.
+        [$templates, $designs] = $this->designPayload();
+
         return view('camera', compact('templates', 'designs'));
+    }
+
+    public function desain(): View
+    {
+        // Halaman pilih desain (tahap 2): foto + biodata + format dititip via
+        // sessionStorage dari /camera. Template difilter client-side sesuai
+        // jumlah foto (lihat desain.blade.php).
+        [$templates, $designs] = $this->designPayload();
+
+        return view('desain', compact('templates', 'designs'));
     }
 
     /**

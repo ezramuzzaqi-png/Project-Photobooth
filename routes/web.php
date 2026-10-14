@@ -22,6 +22,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Photobooth Camera & Result Process
 Route::get('/camera', [PhotoboothController::class, 'camera'])->name('camera');
 Route::post('/photo/save', [PhotoboothController::class, 'savePhoto'])->name('photo.save');
+Route::get('/photo/desain', [PhotoboothController::class, 'desain'])->name('photo.desain');
 Route::get('/photo/{id}/result', [PhotoboothController::class, 'result'])->name('photo.result');
 
 // Admin Panel Routes
@@ -41,4 +42,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/templates/{id}', [AdminController::class, 'updateTemplate'])->name('templates.update');
     Route::delete('/templates/{id}', [AdminController::class, 'destroyTemplate'])->name('templates.destroy');
     Route::patch('/users/{id}/role', [AdminController::class, 'updateUserRole'])->name('users.role');
+    Route::get('/users', [AdminController::class, 'users'])->name('users');
 });
