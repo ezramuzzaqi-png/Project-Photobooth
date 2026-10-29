@@ -4,73 +4,72 @@
 
 @section('admin-content')
     <div>
-        <h1 class="font-serif font-extrabold text-3xl md:text-4xl">Dashboard</h1>
+        <h1 class="page-title">Dashboard</h1>
         <p class="text-brand-muted text-sm mt-1">Ringkasan aktivitas photobooth sekilas.</p>
     </div>
 
     {{-- Statistik Ringkasan --}}
-    <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-3xl p-6 shadow-sm">
-            <p class="text-sm text-brand-muted">Total Pengguna</p>
-            <p class="font-serif font-extrabold text-4xl mt-1">{{ $stats['total_users'] }}</p>
-        </div>
-        <div class="bg-white rounded-3xl p-6 shadow-sm">
-            <p class="text-sm text-brand-muted">Total Foto Sesi</p>
-            <p class="font-serif font-extrabold text-4xl mt-1 text-brand-orange">{{ $stats['total_photos'] }}</p>
-        </div>
-        <div class="bg-white rounded-3xl p-6 shadow-sm">
-            <p class="text-sm text-brand-muted">Foto Hari Ini</p>
-            <p class="font-serif font-extrabold text-4xl mt-1">{{ $stats['today_photos'] }}</p>
-        </div>
-        <div class="bg-brand-dark text-white rounded-3xl p-6 shadow-sm">
-            <p class="text-sm text-white/70">Total Template</p>
-            <p class="font-serif font-extrabold text-4xl mt-1">{{ $stats['total_templates'] }}</p>
-        </div>
+    <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+        @foreach ([
+            ['Total Pengguna', $stats['total_users'], 'text-brand-text'],
+            ['Total Foto Sesi', $stats['total_photos'], 'text-brand-orange'],
+            ['Foto Hari Ini', $stats['today_photos'], 'text-brand-text'],
+            ['Total Template', $stats['total_templates'], 'text-brand-orange'],
+        ] as [$label, $value, $tone])
+            <div class="card p-6">
+                <p class="text-sm text-brand-muted">{{ $label }}</p>
+                <p class="mt-1 font-serif text-4xl font-extrabold {{ $tone }}">{{ $value }}</p>
+            </div>
+        @endforeach
     </div>
 
     {{-- Tabel Kelola Hasil Sesi Foto --}}
-    <div class="mt-6 bg-white rounded-3xl p-6 shadow-sm overflow-x-auto">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="font-bold text-lg">Sesi Foto Terbaru</h2>
-            <a href="{{ route('admin.photos') }}" class="inline-flex items-center gap-1 text-sm text-brand-orange font-semibold">Lihat semua <x-icon name="arrow-right" class="w-4 h-4" /></a>
+    <div class="card mt-6 overflow-hidden">
+        <div class="flex items-center justify-between px-6 pt-6">
+            <h2 class="font-bold">Sesi Foto Terbaru</h2>
+            <a href="{{ route('admin.photos') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-orange transition hover:gap-2">
+                Lihat semua <x-icon name="arrow-right" class="w-4 h-4" />
+            </a>
         </div>
-        <table class="w-full text-sm min-w-[760px]">
-            <thead>
-                <tr class="text-left text-brand-muted border-b">
-                    <th class="py-2 pr-4">ID</th>
-                    <th class="py-2 pr-4">Nama Pengunjung</th>
-                    <th class="py-2 pr-4">Media Sosial</th>
-                    <th class="py-2 pr-4">Preview</th>
-                    <th class="py-2 pr-4">Waktu Sesi</th>
-                    <th class="py-2">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($photos as $p)
-                    <tr class="border-b last:border-0">
-                        <td class="py-3 pr-4 font-mono">#{{ $p->id }}</td>
-                        <td class="py-3 pr-4 font-semibold">{{ $p->visitor_name }}</td>
-                        <td class="py-3 pr-4 text-brand-muted">{{ $p->visitor_social }}</td>
-                        <td class="py-3 pr-4">
-                            <a href="{{ route('photo.result', $p->id) }}" target="_blank">
-                                <img src="{{ asset('storage/' . $p->result_image_path) }}" class="h-20 w-auto rounded-lg border" alt="strip {{ $p->id }}">
-                            </a>
-                        </td>
-                        <td class="py-3 pr-4 text-brand-muted">{{ $p->created_at->format('d M Y H:i') }}</td>
-                        <td class="py-3">
-                            <div class="flex gap-2">
-                                <a href="{{ route('admin.photos.download', $p->id) }}" class="border border-gray-300 rounded-full px-3 py-1 text-xs font-semibold hover:bg-gray-100">Download</a>
-                                <form method="POST" action="{{ route('admin.photos.delete', $p->id) }}" onsubmit="return confirm('Hapus sesi foto #{{ $p->id }}?')">
-                                    @csrf @method('DELETE')
-                                    <button class="border border-red-300 text-red-600 rounded-full px-3 py-1 text-xs font-semibold hover:bg-red-50">Hapus</button>
-                                </form>
-                            </div>
-                        </td>
+        <div class="overflow-x-auto p-6">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="pr-4">ID</th>
+                        <th scope="col" class="pr-4">Nama Pengunjung</th>
+                        <th scope="col" class="pr-4">Media Sosial</th>
+                        <th scope="col" class="pr-4">Preview</th>
+                        <th scope="col" class="pr-4">Waktu Sesi</th>
+                        <th scope="col">Aksi</th>
                     </tr>
-                @empty
-                    <tr><td colspan="6" class="py-6 text-center text-brand-muted">Belum ada sesi foto.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($photos as $p)
+                        <tr>
+                            <td class="pr-4 font-mono text-brand-muted">#{{ $p->id }}</td>
+                            <td class="pr-4 font-semibold">{{ $p->visitor_name }}</td>
+                            <td class="pr-4 text-brand-muted">{{ $p->visitor_social }}</td>
+                            <td class="pr-4 preview-cell">
+                                <a href="{{ route('photo.result', $p->id) }}" target="_blank" rel="noopener">
+                                    <img src="{{ asset('storage/' . $p->result_image_path) }}" class="h-20 w-auto rounded-xl border border-brand-line" alt="Strip sesi #{{ $p->id }}">
+                                </a>
+                            </td>
+                            <td class="pr-4 text-brand-muted">{{ $p->created_at->translatedFormat('d M Y · H:i') }}</td>
+                            <td>
+                                <div class="flex gap-2">
+                                    <a href="{{ route('admin.photos.download', $p->id) }}" class="chip px-3 py-1 text-xs">Download</a>
+                                    <form method="POST" action="{{ route('admin.photos.delete', $p->id) }}" onsubmit="return confirm('Hapus sesi foto #{{ $p->id }}? Tindakan ini tidak bisa dibatalkan.')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="chip px-3 py-1 text-xs text-red-700 hover:border-red-400 hover:text-red-800">Hapus</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="py-10 text-center text-brand-muted">Belum ada sesi foto.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 @endsection

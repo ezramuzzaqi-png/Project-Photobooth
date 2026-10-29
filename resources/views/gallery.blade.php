@@ -1,14 +1,7 @@
 @extends('layouts.app')
 
-@section('title', "Galeri Template — HOLD' MOMENT")
-
-@push('styles')
-<style>
-    body {
-        background: linear-gradient(to bottom, #ffedd5 0, #fff7ed 340px, #F6F4EE 680px) !important;
-    }
-</style>
-@endpush
+@section('title', "Galeri Layout — HOLD' MOMENT")
+@section('meta-description', "Pilih dari berbagai template photostrip — format 2x2, 2x3, strip panjang, hingga struk.")
 
 @section('content')
 <x-layout-selection :templates="$templates" />

@@ -234,7 +234,7 @@ Syarat dari halaman pemanggil (di dalam IIFE script yang sama):
     // Latar + kop: cream HOLD' MOMENT atau kertas struk (tunggal/ganda)
     function paintChrome(ctx, W, g) {
         const s = g.s, pad = g.pad, cx = W / 2;
-        ctx.fillStyle = g.double ? '#FBFAF6' : '#F6F4EE';
+        ctx.fillStyle = g.double ? '#FBFAF6' : '#F7F5F0';
         ctx.fillRect(0, 0, W, g.H);
         if (g.double) {
             for (let k = 0; k < 2; k++) {
@@ -242,11 +242,11 @@ Syarat dari halaman pemanggil (di dalam IIFE script yang sama):
             }
             return;
         }
-        ctx.fillStyle = '#1C1C1C';
+        ctx.fillStyle = '#1C1917';
         ctx.font = '800 ' + (34 * s) + 'px "Playfair Display", Georgia, serif';
         ctx.textAlign = 'center';
         ctx.fillText("HOLD' MOMENT", cx, 55 * s);
-        ctx.fillStyle = '#D95B32';
+        ctx.fillStyle = '#BE4A1C';
         ctx.font = '600 ' + (14 * s) + 'px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('• • •  PHOTOSTRIP  • • •', cx, 80 * s);
     }
@@ -313,16 +313,16 @@ Syarat dari halaman pemanggil (di dalam IIFE script yang sama):
                 fitFont(ctx, '*******THANK YOU!*******', g.colW - g.ip * 2 - 4 * s, 22 * s, '"Courier New", monospace', '');
                 ctx.fillText('*******THANK YOU!*******', ccx, fy + 30 * s);
                 paintBarcode(ctx, ccx, fy + 44 * s, 62 * s, s, g.colW - g.ip * 2);
-                ctx.fillStyle = '#737373';
+                ctx.fillStyle = '#66604F';
                 ctx.font = '500 ' + (14 * s) + 'px "Plus Jakarta Sans", sans-serif';
                 ctx.fillText((state.visitor.name || 'Pengunjung') + ' • ' + (state.visitor.social || '@sosmed'), ccx, fy + 128 * s);
             }
             return;
         }
-        ctx.fillStyle = '#1C1C1C';
+        ctx.fillStyle = '#1C1917';
         ctx.font = '700 ' + (20 * s) + 'px "Plus Jakarta Sans", sans-serif';
         ctx.fillText(state.visitor.name || 'Pengunjung', cx, H - 55 * s);
-        ctx.fillStyle = '#737373';
+        ctx.fillStyle = '#66604F';
         ctx.font = '500 ' + (15 * s) + 'px "Plus Jakarta Sans", sans-serif';
         ctx.fillText((state.visitor.social || '@sosmed') + '  •  ' + new Date().toLocaleDateString('id-ID'), cx, H - 30 * s);
     }
@@ -349,7 +349,7 @@ Syarat dari halaman pemanggil (di dalam IIFE script yang sama):
             if (bg && bg.complete && bg.naturalWidth) {
                 ctx.drawImage(bg, 0, 0, W, g.H);
             } else {
-                ctx.fillStyle = '#1C1C1C';
+                ctx.fillStyle = '#1C1917';
                 ctx.fillRect(0, 0, W, g.H);
             }
             imgs.forEach((im, i) => {

@@ -13,7 +13,12 @@ COPY . .
 
 RUN composer install --optimize-autoloader --no-dev --no-interaction --no-scripts
 
-# Railway: buat storage link & cache saat build (tidak butuh DB)
+# Path yang dipasang sebagai volume persisten di Railway agar file upload
+# (background/frame template) bertahan setelah redeploy.
+VOLUME /app/storage/app/public
+
+# Railway: buat storage link saat runtime (volume baru tersambung saat container
+# mulai, bukan hanya saat build). Diulang di CMD agar symlink selalu selesai.
 RUN php artisan storage:link || true
 
 CMD sh -c "php artisan config:clear && php artisan migrate --force && php artisan db:seed --force || true && php artisan storage:link || true && php artisan serve --host=0.0.0.0 --port=\${PORT:-8080}"

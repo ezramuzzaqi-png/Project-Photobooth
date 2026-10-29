@@ -7,8 +7,10 @@ use App\Models\Template;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AdminController extends Controller
@@ -83,7 +85,7 @@ class AdminController extends Controller
             }
         });
 
-        return back()->with('success', 'Sesi foto #' . $id . ' dihapus, ID diurut ulang.');
+        return back()->with('success', 'Sesi foto #'.$id.' dihapus, ID diurut ulang.');
     }
 
     public function templates(): View
@@ -111,12 +113,16 @@ class AdminController extends Controller
             $validated['layout_type'] = 'strip_1x4';
         }
 
-        $data = [
-            'name' => $validated['name'],
-            'layout_type' => $validated['layout_type'],
-            'frame_image' => $request->hasFile('frame_image') ? $request->file('frame_image')->store('frames', 'public') : null,
-            'background_image' => $request->hasFile('background_image') ? $request->file('background_image')->store('backgrounds', 'public') : null,
-        ];
+        try {
+            $data = [
+                'name' => $validated['name'],
+                'layout_type' => $validated['layout_type'],
+                'frame_image' => $request->hasFile('frame_image') ? $this->reencodeImage($request->file('frame_image'), 'frames') : null,
+                'background_image' => $request->hasFile('background_image') ? $this->reencodeImage($request->file('background_image'), 'backgrounds') : null,
+            ];
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
 
         Template::create($data);
 
@@ -162,31 +168,147 @@ class AdminController extends Controller
             $data['background_image'] = null;
         }
 
-        // Ganti file frame bila diupload baru (file lama dihapus dari storage)
-        if ($request->hasFile('frame_image')) {
-            if ($template->frame_image) Storage::disk('public')->delete($template->frame_image);
-            $data['frame_image'] = $request->file('frame_image')->store('frames', 'public');
-        }
-        if ($request->hasFile('background_image')) {
-            if ($template->background_image) Storage::disk('public')->delete($template->background_image);
-            $data['background_image'] = $request->file('background_image')->store('backgrounds', 'public');
+        try {
+            // Ganti file frame bila diupload baru (file lama dihapus dari storage)
+            if ($request->hasFile('frame_image')) {
+                if ($template->frame_image) {
+                    Storage::disk('public')->delete($template->frame_image);
+                }
+                $data['frame_image'] = $this->reencodeImage($request->file('frame_image'), 'frames');
+            }
+            if ($request->hasFile('background_image')) {
+                if ($template->background_image) {
+                    Storage::disk('public')->delete($template->background_image);
+                }
+                $data['background_image'] = $this->reencodeImage($request->file('background_image'), 'backgrounds');
+            }
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         }
 
         $template->update($data);
 
-        return redirect()->route('admin.templates')->with('success', 'Template "' . $template->name . '" diperbarui.');
+        return redirect()->route('admin.templates')->with('success', 'Template "'.$template->name.'" diperbarui.');
+    }
+
+    /**
+     * Batas dimensi piksel sebelum gambar didecode ke memori. Dicek melalui
+     * getimagesize() (hanya baca header) sehingga gambar raksasa tidak pernah
+     * memicu imagecreatefrompng/imagecreatefromjpeg.
+     */
+    private const MAX_UPLOAD_WIDTH = 4096;
+
+    private const MAX_UPLOAD_HEIGHT = 4096;
+
+    /**
+     * Baca gambar asli dengan GD, resize ke ukuran maksimal wajar untuk canvas
+     * strip, lalu simpan ulang sebagai file gambar bersih (menghapus metadata &
+     * data tersisip/polyglot). Nama file digenerate sendiri (bukan nama asli
+     * user) untuk mencegah path traversal dan penimpaan file.
+     *
+     * @return string|null Relatif path di disk public, atau null saat file
+     *                     tidak diupload.
+     *
+     * @throws ValidationException saat berkas gagal
+     *                             diproses (bukan gambar valid, terlalu besar, atau gagal simpan).
+     */
+    private function reencodeImage(UploadedFile $file, string $folder): ?string
+    {
+        $path = $file->getRealPath();
+
+        // getimagesize hanya baca header; file non-gambar / polyglot yang
+        // bukan citra valid akan menghasilkan false.
+        $size = getimagesize($path);
+        if ($size === false) {
+            throw ValidationException::withMessages([
+                'image' => 'Berkas bukan gambar PNG atau JPEG yang valid.',
+            ]);
+        }
+
+        // Tolak dimensi piksel sangat besar SEBELUM didecode ke memori.
+        if ($size[0] > self::MAX_UPLOAD_WIDTH || $size[1] > self::MAX_UPLOAD_HEIGHT) {
+            throw ValidationException::withMessages([
+                'image' => 'Gambar terlalu besar. Maksimum '.self::MAX_UPLOAD_WIDTH.'\u00d7'.self::MAX_UPLOAD_HEIGHT.' piksel.',
+            ]);
+        }
+
+        $type = $size[2]; // IMAGETYPE_PNG=3, IMAGETYPE_JPEG=2
+        if (! in_array($type, [IMAGETYPE_PNG, IMAGETYPE_JPEG], true)) {
+            throw ValidationException::withMessages([
+                'image' => 'Hanya berkas PNG dan JPEG yang diizinkan.',
+            ]);
+        }
+
+        $src = match ($type) {
+            IMAGETYPE_PNG => imagecreatefrompng($path),
+            IMAGETYPE_JPEG => imagecreatefromjpeg($path),
+            default => null,
+        };
+
+        if ($src === false || $src === null) {
+            throw ValidationException::withMessages([
+                'image' => 'Gagal membaca berkas gambar.',
+            ]);
+        }
+
+        $srcW = imagesx($src);
+        $srcH = imagesy($src);
+
+        // Canvas strip resolusi penuh adalah 900 px lebar (lihat
+        // strip-engine fullResStrip). Maksimum 1500×2250 memberi headroom
+        // di atas tampilan 900 px tanpa menyimpan berkas berlebihan.
+        $maxW = 1500;
+        $maxH = 2250;
+        $ratio = min(1.0, $maxW / $srcW, $maxH / $srcH);
+        $dstW = (int) round($srcW * $ratio);
+        $dstH = (int) round($srcH * $ratio);
+
+        $dst = imagecreatetruecolor($dstW, $dstH);
+
+        // Pertahankan alpha channel untuk PNG transparan.
+        if ($type === IMAGETYPE_PNG) {
+            imagealphablending($dst, false);
+            imagesavealpha($dst, true);
+        }
+
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $dstW, $dstH, $srcW, $srcH);
+
+        $extension = ($type === IMAGETYPE_PNG) ? 'png' : 'jpg';
+        $filename = $folder.'/'.sha1_file($path).'_'.uniqid('', true).'.'.$extension;
+        $target = storage_path('app/public/'.$filename);
+
+        $success = match ($type) {
+            IMAGETYPE_PNG => imagepng($dst, $target, 8),
+            IMAGETYPE_JPEG => imagejpeg($dst, $target, 85),
+            default => false,
+        };
+
+        imagedestroy($dst);
+        imagedestroy($src);
+
+        if (! $success) {
+            throw ValidationException::withMessages([
+                'image' => 'Gagal menyimpan berkas gambar.',
+            ]);
+        }
+
+        return $filename;
     }
 
     public function destroyTemplate(int $id): RedirectResponse
     {
         $template = Template::findOrFail($id);
 
-        if ($template->frame_image) Storage::disk('public')->delete($template->frame_image);
-        if ($template->background_image) Storage::disk('public')->delete($template->background_image);
+        if ($template->frame_image) {
+            Storage::disk('public')->delete($template->frame_image);
+        }
+        if ($template->background_image) {
+            Storage::disk('public')->delete($template->background_image);
+        }
         $name = $template->name;
         $template->delete(); // foto yang memakai template ini otomatis jadi NULL (nullOnDelete)
 
-        return back()->with('success', 'Template "' . $name . '" dihapus.');
+        return back()->with('success', 'Template "'.$name.'" dihapus.');
     }
 
     public function updateUserRole(Request $request, int $id): RedirectResponse
@@ -198,6 +320,6 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         $user->update(['role' => $validated['role']]);
 
-        return back()->with('success', 'Role ' . $user->email . ' diubah ke ' . $validated['role'] . '.');
+        return back()->with('success', 'Role '.$user->email.' diubah ke '.$validated['role'].'.');
     }
 }

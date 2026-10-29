@@ -1,68 +1,82 @@
 @extends('layouts.app')
 
-@section('title', "How It Works — HOLD' MOMENT")
+@section('title', "Cara Kerja — HOLD' MOMENT")
+@section('meta-description', "Lima langkah sederhana: isi biodata, atur strip dan filter, jepret, pilih desain, lalu cetak atau bagikan photostrip-mu.")
 
 @section('content')
-<section class="max-w-3xl mx-auto px-6 pt-14 pb-10">
-    <h1 class="font-serif font-extrabold text-4xl md:text-5xl text-center">How it works</h1>
-    <p class="text-center text-brand-muted mt-3">Lima langkah cepat dari kamera sampai photostrip siap dibagikan.</p>
 
-    <div class="mt-12 relative">
-        {{-- garis konektor kiri --}}
-        <div class="absolute left-[27px] top-2 bottom-2 w-px bg-brand-text/15"></div>
+<section class="mx-auto max-w-3xl px-6 pb-10 pt-16 text-center page-enter">
+    <p class="eyebrow">Cara Kerja</p>
+    <h1 class="app-title mt-4">Lima langkah, lalu jadi</h1>
+    <p class="mx-auto mt-4 max-w-xl text-brand-muted">
+        Dari kamera sampai photostrip siap dibagikan — tanpa aplikasi tambahan.
+    </p>
+</section>
+
+<section class="mx-auto max-w-3xl px-6 pb-8">
+    <ol class="relative space-y-5">
+        {{-- Garis konektor --}}
+        <span class="absolute left-[27px] top-2 bottom-2 w-px bg-gradient-to-b from-brand-orange/40 via-brand-line to-transparent" aria-hidden="true"></span>
 
         @php
             $steps = [
-                ['icon' => 'user', 'title' => 'Isi biodata', 'desc' => 'Nama dan media sosial — tersimpan otomatis untuk kunjungan berikutnya', 'dark' => false],
-                ['icon' => 'sliders', 'title' => 'Atur strip, filter & timer', 'desc' => 'Format 2x2 atau 2x3, 13 filter kamera, dan timer 3/5/10 detik lewat menu vertikal di sisi kiri', 'dark' => false],
-                ['icon' => 'camera', 'title' => 'Jepret fotomu', 'desc' => null, 'dark' => false, 'badges' => ['4 foto untuk strip 2x2', '6 foto untuk strip 2x3', 'Kurang puas? Retake']],
-                ['icon' => 'image', 'title' => 'Pilih desain strip', 'desc' => 'Otomatis pindah ke halaman desain — daftar menyesuaikan format fotomu, termasuk Receipt untuk 4 foto', 'dark' => false],
+                ['icon' => 'user', 'title' => 'Isi biodata', 'desc' => 'Cukup nama dan username media sosialmu. Dipakai sebagai label di photostrip hasil.'],
+                ['icon' => 'sliders', 'title' => 'Atur strip, filter & timer', 'desc' => 'Pilih format 2x2 atau 2x3, pilih filter kamera, dan atur timer 3/5/10 detik lewat rail di sisi kiri.'],
+                ['icon' => 'camera', 'title' => 'Jepret fotomu', 'desc' => 'Ikuti hitung mundur, lalu jepret. Preview strip terisi langsung di panel kanan.', 'badges' => ['4 foto untuk 2x2', '6 foto untuk 2x3', 'Retake foto terakhir kapan saja']],
+                ['icon' => 'image', 'title' => 'Pilih desain strip', 'desc' => 'Galeri desain menyesuaikan jumlah fotomu. Terapkan frame pilihanmu ke strip.'],
             ];
         @endphp
 
-        <div class="space-y-6">
-            @foreach($steps as $s)
-                <div class="relative flex gap-5 items-start">
-                    <div class="relative z-10 w-14 h-14 shrink-0 rounded-full {{ $s['dark'] ?? false ? 'bg-black' : 'bg-brand-orange' }} text-white flex items-center justify-center shadow"><x-icon :name="$s['icon']" class="w-6 h-6" /></div>
-                    <div class="bg-white rounded-2xl px-6 py-4 shadow-sm flex-1">
-                        <p class="font-bold">{{ $s['title'] }}</p>
-                        @if(!empty($s['desc']))
-                            <p class="text-sm text-brand-muted mt-1">{{ $s['desc'] }}</p>
-                        @endif
-                        @if(!empty($s['badges'] ?? []))
-                            <div class="mt-2 flex flex-wrap gap-2">
-                                @foreach($s['badges'] as $b)
-                                    <span class="text-xs bg-brand-card-light rounded-full px-3 py-1">{{ $b }}</span>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @endforeach
+        @foreach ($steps as $i => $s)
+            <li class="relative flex items-start gap-5">
+                <span class="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-orange text-white shadow-glow" aria-hidden="true">
+                    <x-icon :name="$s['icon']" class="h-6 w-6" />
+                </span>
 
-            {{-- Step final: kartu hitam --}}
-            <div class="relative flex gap-5 items-start">
-                <div class="relative z-10 w-14 h-14 shrink-0 rounded-full bg-black text-white flex items-center justify-center shadow"><x-icon name="check" class="w-6 h-6" /></div>
-                <div class="bg-brand-dark rounded-2xl p-6 text-white flex-1">
-                    <p class="font-bold text-lg">Strip-mu siap!</p>
-                    <div class="mt-4 grid grid-cols-3 gap-3 text-center text-sm">
-                        <div class="bg-white/10 rounded-xl py-4 flex flex-col items-center">
-                            <x-icon name="print" class="w-7 h-7" />
-                            <p class="mt-1 font-semibold">Cetak</p>
-                        </div>
-                        <div class="bg-white/10 rounded-xl py-4 flex flex-col items-center">
-                            <x-icon name="download" class="w-7 h-7" />
-                            <p class="mt-1 font-semibold">Simpan</p>
-                        </div>
-                        <div class="bg-white/10 rounded-xl py-4 flex flex-col items-center">
-                            <x-icon name="share" class="w-7 h-7" />
-                            <p class="mt-1 font-semibold">Bagikan</p>
-                        </div>
+                <div class="card flex-1 p-6 group">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xs font-bold tracking-[.16em] text-brand-orange group-hover:text-brand-orange-hover transition-colors">LANGKAH {{ $i + 1 }}</span>
                     </div>
-                    <a href="{{ route('camera') }}" class="inline-block mt-5 bg-brand-orange hover:bg-brand-orange-hover rounded-full px-6 py-2.5 font-semibold text-sm transition">Try it now!</a>
+                    <h2 class="mt-1 font-bold group-hover:text-brand-text transition-colors">{{ $s['title'] }}</h2>
+                    <p class="mt-2 text-sm leading-relaxed text-brand-muted">{{ $s['desc'] }}</p>
+
+                    @if (!empty($s['badges']))
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            @foreach ($s['badges'] as $badge)
+                                <span class="chip px-3 py-1 text-xs">{{ $badge }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </li>
+        @endforeach
+
+        {{-- Langkah terakhir --}}
+        <li class="relative flex items-start gap-5">
+            <span class="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-dark text-white shadow-lift" aria-hidden="true">
+                <x-icon name="check" class="h-6 w-6" />
+            </span>
+
+            <div class="relative w-full flex-1 overflow-hidden rounded-3xl bg-brand-panel p-7 text-white shadow-lift">
+                <div class="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full accent-haze blur-3xl" aria-hidden="true"></div>
+
+                <div class="relative">
+                    <span class="text-2xs font-bold tracking-[.16em] text-brand-orange-bright">LANGKAH 5</span>
+                    <h2 class="mt-1 font-serif text-xl font-extrabold">Strip-mu siap!</h2>
+
+                    <div class="mt-5 grid grid-cols-3 gap-3 text-center text-sm">
+                        @foreach ([['print', 'Cetak'], ['download', 'Simpan'], ['share', 'Bagikan']] as [$icon, $label])
+                            <div class="flex flex-col items-center rounded-2xl bg-white/10 py-5 ring-1 ring-white/10">
+                                <x-icon :name="$icon" class="h-6 w-6" />
+                                <p class="mt-2 font-semibold">{{ $label }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <a href="{{ route('camera') }}" class="btn btn-primary btn-md mt-6">Coba Sekarang</a>
                 </div>
             </div>
-        </div>
-    </div>
+        </li>
+    </ol>
 </section>
 @endsection

@@ -41,13 +41,16 @@ Akun admin bawaan (dari seeder): `admin@holdmoment.test` / `password`
 ```powershell
 php artisan storage:link
 npm install
-npm run dev     # development (Vite)
+npm run dev     # development (Vite, hot reload)
 # atau
-npm run build   # production
+npm run build   # production → public/build/
 ```
-> Catatan: layout Blade juga memuat Tailwind via CDN + konfigurasi `brand-*`
-> yang sama dengan `tailwind.config.js`, sehingga tampilan langsung benar
-> bahkan sebelum `npm run dev/build`.
+> **Penting:** Tailwind CSS + Alpine.js sudah di-build lewat Vite dan di-load
+> di `layouts/app.blade.php` dengan `@vite`. Tidak ada lagi CDN Tailwind.
+> Kalau tampilan berantakan (utility class tidak muncul), jalankan ulang
+> `npm run build`.
+> Token warna & komponen ada di `resources/css/app.css`, color palette di
+> `tailwind.config.js` — ubah di sana, jangan tulis hex manual di Blade.
 
 ## 5. Jalankan
 ```powershell
@@ -74,7 +77,8 @@ php artisan serve   # http://127.0.0.1:8000
 6. Kamera butuh **HTTPS atau localhost** agar `getUserMedia` diizinkan browser.
 
 ## 8. Struktur Kode Penting
-- `tailwind.config.js` — warna `brand-bg/orange/dark/card-light/text/muted` + font Playfair Display & Plus Jakarta Sans
+- `tailwind.config.js` — warna `brand-bg/orange/dark/card-light/text/muted` + font Playfair Display & Plus Jakarta Sans. Semua kombinasi warna sudah diuji lolos WCAG AA (`brand-orange` #BE4A1C, `brand-muted` #66604F)
+- `resources/css/app.css` — design system: `.btn-*`, `.card`, `.input`, `.chip`, `.nav-link`, `.film-line`, plus gaya khusus camera & aturan `@media print`
 - `routes/web.php` — publik, auth, kamera, admin (`auth`+`admin`)
 - `app/Http/Controllers/{Page,Auth,Photobooth,Admin}Controller.php`
 - `app/Http/Middleware/AdminMiddleware.php` (alias `admin` di `bootstrap/app.php`)

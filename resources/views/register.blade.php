@@ -1,51 +1,68 @@
 @extends('layouts.app')
 
-@section('title', "Sign Up — HOLD' MOMENT")
+@section('title', "Daftar — HOLD' MOMENT")
 
 @section('content')
-<section class="max-w-5xl mx-auto px-6 py-12">
-    <div class="rounded-3xl shadow-xl overflow-hidden grid md:grid-cols-2">
-        {{-- Panel Kiri --}}
-        <div class="bg-brand-orange text-white p-12">
-            <p class="font-serif font-extrabold tracking-widest">HOLD' MOMENT</p>
-            <h2 class="font-serif font-extrabold text-3xl md:text-4xl mt-10 leading-tight">Mulai buat kenangan seru bersama teman.</h2>
-            <p class="mt-3 text-white/80 text-sm">Daftar gratis dan simpan semua hasil foto strip favoritmu.</p>
+
+<x-auth-card
+    heading="Mulai buat kenangan seru bersama teman."
+    title="Buat akun baru"
+    subtitle="Gratis, cukup beberapa detik untuk mulai."
+    :points="[
+        'Simpan hasil photostrip tanpa batas',
+        'Cetak ulang kapan pun kamu mau',
+        'Gratis selamanya, tanpa biaya tersembunyi',
+    ]">
+
+    <form method="POST" action="{{ route('register') }}" class="mt-8 space-y-5" novalidate>
+        @csrf
+
+        <div>
+            <label for="name" class="label">Nama Lengkap</label>
+            <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
+                   autocomplete="name" placeholder="Nama lengkapmu"
+                   class="input @error('name') !border-red-400 @enderror"
+                   @error('name') aria-invalid="true" aria-describedby="name-err" @enderror>
+            @error('name')
+                <p id="name-err" class="error-text">{{ $message }}</p>
+            @enderror
         </div>
-        {{-- Panel Kanan --}}
-        <div class="bg-white p-12">
-            <h2 class="font-bold text-2xl">Buat akun baru</h2>
-            <p class="text-sm text-brand-muted mt-1">Gratis, cukup beberapa detik untuk mulai</p>
 
-            @if($errors->any())
-                <div class="mt-4 bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3">
-                    <ul class="list-disc ml-5">
-                        @foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4">
-                @csrf
-                <label class="block text-sm font-semibold">Nama Lengkap
-                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="Masukan nama lengkap anda" class="mt-1 rounded-xl border border-gray-300 px-4 py-2.5 w-full font-normal outline-none focus:border-brand-orange">
-                </label>
-                <label class="block text-sm font-semibold">Email
-                    <input type="email" name="email" value="{{ old('email') }}" required placeholder="nama@gmail.com" class="mt-1 rounded-xl border border-gray-300 px-4 py-2.5 w-full font-normal outline-none focus:border-brand-orange">
-                </label>
-                <label class="block text-sm font-semibold">Password
-                    <input type="password" name="password" required placeholder="Password" class="mt-1 rounded-xl border border-gray-300 px-4 py-2.5 w-full font-normal outline-none focus:border-brand-orange">
-                </label>
-                <label class="block text-sm font-semibold">Konfirmasi Password
-                    <input type="password" name="password_confirmation" required placeholder="Ulangi password" class="mt-1 rounded-xl border border-gray-300 px-4 py-2.5 w-full font-normal outline-none focus:border-brand-orange">
-                </label>
-                <div class="text-right">
-                    <a href="#" class="text-sm text-brand-orange font-semibold">Lupa kata sandi?</a>
-                </div>
-                <button type="submit" class="bg-brand-orange text-white rounded-full py-3 w-full font-semibold hover:bg-brand-orange-hover transition">Daftar</button>
-            </form>
-
-            <p class="mt-6 text-center text-sm text-brand-muted">Sudah punya akun? <a href="{{ route('login') }}" class="text-brand-orange font-bold">Masuk</a></p>
+        <div>
+            <label for="email" class="label">Email</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" required
+                   autocomplete="email" placeholder="nama@email.com"
+                   class="input @error('email') !border-red-400 @enderror"
+                   @error('email') aria-invalid="true" aria-describedby="email-err" @enderror>
+            @error('email')
+                <p id="email-err" class="error-text">{{ $message }}</p>
+            @enderror
         </div>
-    </div>
-</section>
+
+        <div>
+            <label for="password" class="label">Kata Sandi</label>
+            <input id="password" type="password" name="password" required
+                   autocomplete="new-password" placeholder="Minimal 8 karakter"
+                   class="input @error('password') !border-red-400 @enderror"
+                   @error('password') aria-invalid="true" aria-describedby="password-err" @enderror>
+            @error('password')
+                <p id="password-err" class="error-text">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div>
+            <label for="password_confirmation" class="label">Konfirmasi Kata Sandi</label>
+            <input id="password_confirmation" type="password" name="password_confirmation" required
+                   autocomplete="new-password" placeholder="Ulangi kata sandimu" class="input">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-md w-full">Daftar Sekarang</button>
+    </form>
+
+    <p class="mt-8 text-center text-sm text-brand-muted">
+        Sudah punya akun?
+        <a href="{{ route('login') }}" class="link-orange">Masuk di sini</a>
+    </p>
+</x-auth-card>
+
 @endsection

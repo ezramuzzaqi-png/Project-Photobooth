@@ -4,34 +4,57 @@
 
 @section('admin-content')
     <div>
-        <h1 class="font-serif font-extrabold text-3xl md:text-4xl">Foto</h1>
+        <h1 class="page-title">Foto</h1>
         <p class="text-brand-muted text-sm mt-1">{{ $photos->total() }} sesi foto tersimpan. Klik preview untuk melihat hasil penuh.</p>
     </div>
-    <div class="mt-6 bg-white rounded-3xl p-6 shadow-sm overflow-x-auto">
-        <table class="w-full text-sm min-w-[760px]">
-            <thead><tr class="text-left text-brand-muted border-b"><th class="py-2 pr-4">ID</th><th class="py-2 pr-4">Nama</th><th class="py-2 pr-4">Sosmed</th><th class="py-2 pr-4">Preview</th><th class="py-2 pr-4">Waktu</th><th class="py-2">Aksi</th></tr></thead>
-            <tbody>
-                @forelse($photos as $p)
-                    <tr class="border-b last:border-0">
-                        <td class="py-3 pr-4 font-mono">#{{ $p->id }}</td>
-                        <td class="py-3 pr-4 font-semibold">{{ $p->visitor_name }}</td>
-                        <td class="py-3 pr-4">{{ $p->visitor_social }}</td>
-                        <td class="py-3 pr-4">
-                            <a href="{{ route('photo.result', $p->id) }}" target="_blank">
-                                <img src="{{ asset('storage/' . $p->result_image_path) }}" class="h-20 w-auto rounded-lg border hover:opacity-90 transition" alt="strip {{ $p->id }}">
-                            </a>
-                        </td>
-                        <td class="py-3 pr-4 text-brand-muted">{{ $p->created_at->format('d M Y H:i') }}</td>
-                        <td class="py-3 flex gap-2">
-                            <a href="{{ route('admin.photos.download', $p->id) }}" class="border border-gray-300 rounded-full px-3 py-1 text-xs font-semibold hover:bg-gray-100">Download</a>
-                            <form method="POST" action="{{ route('admin.photos.delete', $p->id) }}" onsubmit="return confirm('Hapus sesi foto #{{ $p->id }}?')">@csrf @method('DELETE')<button class="border border-red-300 text-red-600 rounded-full px-3 py-1 text-xs font-semibold hover:bg-red-50">Hapus</button></form>
-                        </td>
+    <div class="card mt-6 overflow-hidden">
+        <div class="overflow-x-auto p-6">
+            <table class="admin-table">
+                <caption class="sr-only">Daftar sesi foto tersimpan beserta aksi unduh dan hapus</caption>
+                <thead>
+                    <tr>
+                        <th scope="col" class="pr-4">ID</th>
+                        <th scope="col" class="pr-4">Nama</th>
+                        <th scope="col" class="pr-4">Sosmed</th>
+                        <th scope="col" class="pr-4">Preview</th>
+                        <th scope="col" class="pr-4">Waktu</th>
+                        <th scope="col">Aksi</th>
                     </tr>
-                @empty
-                    <tr><td colspan="6" class="py-6 text-center text-brand-muted">Belum ada data.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-        <div class="mt-4">{{ $photos->links() }}</div>
+                </thead>
+                <tbody>
+                    @forelse($photos as $p)
+                        <tr>
+                            <td class="pr-4 font-mono text-brand-muted">#{{ $p->id }}</td>
+                            <td class="pr-4 font-semibold">{{ $p->visitor_name }}</td>
+                            <td class="pr-4">{{ $p->visitor_social }}</td>
+                            <td class="pr-4 preview-cell">
+                                <a href="{{ route('photo.result', $p->id) }}" target="_blank" rel="noopener"
+                                   aria-label="Buka hasil sesi #{{ $p->id }} di tab baru">
+                                    <img src="{{ asset('storage/' . $p->result_image_path) }}"
+                                         class="h-20 w-auto rounded-xl border border-brand-line hover:opacity-90 transition"
+                                         alt="Strip sesi #{{ $p->id }} milik {{ $p->visitor_name }}">
+                                </a>
+                            </td>
+                            <td class="pr-4 text-brand-muted">
+                                <time datetime="{{ $p->created_at->toIso8601String() }}">{{ $p->created_at->format('d M Y H:i') }}</time>
+                            </td>
+                            <td>
+                                <div class="flex gap-2">
+                                    <a href="{{ route('admin.photos.download', $p->id) }}" class="chip px-3 py-1 text-xs">Download</a>
+                                    <form method="POST" action="{{ route('admin.photos.delete', $p->id) }}"
+                                          onsubmit="return confirm('Hapus sesi foto #{{ $p->id }}?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="chip px-3 py-1 text-xs text-red-700 hover:border-red-400 hover:text-red-800">Hapus</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="py-6 text-center text-brand-muted">Belum ada data.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="px-6 pb-6">{{ $photos->links() }}</div>
     </div>
 @endsection

@@ -39,7 +39,7 @@
     {{-- Header gradien oranye pastel (selaras brand) --}}
     <div>
         <section class="max-w-6xl mx-auto px-6 pt-14 pb-10 text-center">
-            <p class="inline-block bg-white rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest text-brand-orange shadow-sm">LAYOUT COLLECTION</p>
+            <p class="inline-block bg-white rounded-full px-4 py-1.5 text-xs font-semibold tracking-widest text-brand-orange shadow-card">LAYOUT COLLECTION</p>
             <h1 class="font-serif font-light text-4xl md:text-6xl mt-4">choose your layout</h1>
             <p class="mt-3 text-brand-muted text-sm md:text-base">Select from our collection of photo booth layouts</p>
 
@@ -48,7 +48,7 @@
                 @foreach($tabs as $c)
                     <button
                         @click="tab = '{{ $c }}'"
-                        :class="tab === '{{ $c }}' ? 'bg-brand-orange border-brand-orange text-white shadow-md' : 'bg-white border-gray-200 text-brand-text hover:border-brand-orange'"
+                        :class="tab === '{{ $c }}' ? 'bg-brand-orange border-brand-orange text-white shadow-card' : 'bg-white border-brand-line text-brand-text hover:border-brand-orange'"
                         class="rounded-full border px-5 py-2 text-sm font-semibold transition">
                         {{ $c }} <span class="opacity-70">({{ $counts[$c] }})</span>
                     </button>
@@ -60,7 +60,7 @@
     {{-- Carousel kartu --}}
     <section class="max-w-6xl mx-auto px-6 py-10">
         @if(count($templates) === 0)
-            <div class="bg-white rounded-3xl p-10 shadow-sm text-center text-sm text-brand-muted">
+            <div class="bg-white rounded-3xl p-10 shadow-card text-center text-sm text-brand-muted">
                 Belum ada template. Admin bisa menambah lewat panel admin → Template.
             </div>
         @else
@@ -76,7 +76,7 @@
                                 : ($t->background_image ? 'bg-white/90 text-brand-orange border border-brand-orange/30' : 'bg-brand-dark text-white');
                         @endphp
                         <article x-show="tab === 'All' || '{{ implode(',', $cats) }}'.split(',').includes(tab)" class="snap-start shrink-0 w-60 md:w-72">
-                            <a href="{{ route('camera') }}" class="block bg-white rounded-3xl p-3 shadow-sm hover:shadow-xl transition h-full">
+                            <a href="{{ route('camera') }}" class="block bg-white rounded-3xl p-3 shadow-card hover:shadow-lift transition h-full">
                                 <div class="relative">
                                     <span class="absolute top-2 left-2 z-10 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide {{ $badgeClass }}">{{ $badge }}</span>
                                     @if($t->background_image)
@@ -100,11 +100,11 @@
 
                 {{-- Panah navigasi --}}
                 <button @click="scrollList(-1)" title="Sebelumnya"
-                    class="hidden md:flex absolute -left-5 top-40 w-11 h-11 rounded-full bg-white shadow-lg border border-black/5 items-center justify-center text-brand-text hover:bg-brand-orange hover:text-white hover:border-brand-orange transition">
+                    class="hidden md:flex absolute -left-5 top-40 w-11 h-11 rounded-full bg-white shadow-card border border-black/5 items-center justify-center text-brand-text hover:bg-brand-orange hover:text-white hover:border-brand-orange transition">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M14.5 6L8.5 12l6 6"/></svg>
                 </button>
                 <button @click="scrollList(1)" title="Berikutnya"
-                    class="hidden md:flex absolute -right-5 top-40 w-11 h-11 rounded-full bg-white shadow-lg border border-black/5 items-center justify-center text-brand-text hover:bg-brand-orange hover:text-white hover:border-brand-orange transition">
+                    class="hidden md:flex absolute -right-5 top-40 w-11 h-11 rounded-full bg-white shadow-card border border-black/5 items-center justify-center text-brand-text hover:bg-brand-orange hover:text-white hover:border-brand-orange transition">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M9.5 6l6 6-6 6"/></svg>
                 </button>
             </div>

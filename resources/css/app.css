@@ -2,12 +2,485 @@
 @tailwind components;
 @tailwind utilities;
 
-/* HOLD' MOMENT — film-strip logo helper */
-.film-stripes {
-  background-image: repeating-linear-gradient(
-    to right,
-    currentColor 0 8px,
-    transparent 8px 14px
-  );
-  height: 4px;
+/* ==========================================================================
+   HOLD' MOMENT — Design System
+   Token warna, komponen, dan gaya khusus photobooth.
+   Semua kelas kustom ada di sini; halaman cukup pakai class Tailwind biasa.
+   ========================================================================== */
+
+@layer base {
+  :root {
+    /* Dipakai juga oleh CSS di luar Tailwind (fullscreen, pulse, glow) */
+    --hm-orange: #be4a1c;
+    --hm-orange-hover: #a93c15;
+    --hm-orange-bright: #d95b32;
+    --hm-dark: #1c1917;
+    --hm-ink: #17140f;
+    --hm-line: #e5dfd3;
+    --hm-radius: 1.75rem;
+
+    /* Safe-area iPhone: navbar sticky & footer tidak boleh tertutup notch /
+       home indicator. Default 0px supaya aman di browser tanpa support. */
+    --hm-safe-l: env(safe-area-inset-left, 0px);
+    --hm-safe-r: env(safe-area-inset-right, 0px);
+    --hm-safe-b: env(safe-area-inset-bottom, 0px);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply font-sans bg-brand-bg text-brand-text antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Fokus keyboard harus selalu terlihat, di seluruh aplikasi. */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    @apply outline-none ring-2 ring-brand-orange ring-offset-2 ring-offset-brand-bg rounded-lg;
+    transition: box-shadow .18s cubic-bezier(.22,1,.36,1);
+  }
+
+  ::selection {
+    @apply bg-brand-orange/20 text-brand-text;
+  }
+
+  /* Alpine: cegah elemen x-show berkedip sebelum JS dimuat */
+  [x-cloak] { display: none !important; }
+
+  /* Scrollbar tipis & konsisten */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #d6cec0 transparent;
+  }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #d6cec0;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #bdb3a2; background-clip: content-box; }
+
+  /* Hormati preferensi pengguna yang tidak ingin animasi. */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+      transition-delay: 0ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Animasi reveal memakai fill-mode "both". Kalau animasi gagal jalan
+     (printer, screenshot engine, throttling), konten jangan sampai hilang. */
+  @media print {
+    .animate-rise, .animate-fade-in, .animate-pop-in, .animate-float {
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+@layer components {
+  /* ---------- Tombol ---------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full font-semibold
+           transition-all duration-200 ease-spring whitespace-nowrap
+           disabled:opacity-45 disabled:pointer-events-none select-none;
+  }
+  .btn-md { @apply px-7 py-3 text-sm; }
+  .btn-sm { @apply px-5 py-2 text-[13px]; }
+  .btn-lg { @apply px-9 py-4 text-base; }
+
+  .btn-primary {
+    @apply btn bg-brand-orange text-white shadow-glow
+           hover:bg-brand-orange-hover hover:-translate-y-0.5 hover:shadow-lift active:translate-y-0;
+  }
+  .btn-dark {
+    @apply btn bg-brand-dark text-white hover:bg-black hover:-translate-y-0.5 active:translate-y-0;
+  }
+  /* Batas tombol adalah batas komponen interaktif → butuh ≥3:1 (WCAG 1.4.11),
+     jadi pakai brand-line-strong, bukan brand-line yang dekoratif. */
+  .btn-outline {
+    @apply btn border border-brand-line-strong bg-white text-brand-text
+           hover:border-brand-orange hover:text-brand-orange hover:-translate-y-0.5 active:translate-y-0;
+  }
+  .btn-ghost { @apply btn text-brand-muted hover:text-brand-orange hover:bg-brand-card-light; }
+  .btn-danger {
+    @apply btn border border-red-200 text-red-700 hover:bg-red-50;
+  }
+
+  /* ---------- Permukaan ---------- */
+  .card {
+    @apply rounded-3xl bg-white shadow-card ring-1 ring-black/[.04];
+  }
+  .card-hover { @apply transition-all duration-300 ease-spring hover:-translate-y-1 hover:shadow-lift hover:ring-brand-orange/20; }
+  .panel { @apply rounded-3xl bg-brand-card-light/70 ring-1 ring-brand-line/70; }
+
+  /* ---------- Form ---------- */
+  .label { @apply block text-sm font-semibold text-brand-text; }
+  .input {
+    @apply mt-1.5 w-full rounded-2xl border border-brand-line-strong bg-white px-4 py-3
+           font-normal text-brand-text placeholder:text-brand-muted/70
+           transition-colors focus:border-brand-orange focus:bg-white;
+  }
+  textarea.input { @apply min-h-[96px] resize-y; }
+
+  /* Pembatas 3:1 (WCAG 1.4.11) untuk input yang gagal validasi. */
+  .input[aria-invalid='true'] { @apply border-red-400 bg-red-50/40; }
+
+  /* Panah dropdown select — ditulis manual karena nilai arbitrary-nya
+     mengandung koma & tanda kutip sehingga tidak bisa dipakai di @apply. */
+  select.input {
+    @apply appearance-none bg-no-repeat pr-11;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2366604F' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 1rem center;
+    background-size: 18px 18px;
+  }
+
+  .hint { @apply mt-1.5 text-xs text-brand-muted; }
+  .error-text { @apply mt-1.5 text-xs font-medium text-red-700; }
+
+  /* ---------- Navigasi ---------- */
+  .nav-link {
+    @apply relative rounded-full px-3 py-1.5 text-sm font-medium text-brand-muted
+           transition-colors hover:text-brand-orange;
+  }
+  .nav-link-active { @apply text-brand-orange; }
+  .nav-link-active::after {
+    content: '';
+    @apply absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-brand-orange;
+  }
+
+  /* Halaman yang sedang dibuka: tombol CTA Camera di navbar jadi lebih gelap
+     supaya terlihat aktif. Ditulis di sini (bukan utility di markup) supaya
+     tidak bentrok urutan dengan bg yang sudah diset .btn-primary. */
+  .btn[aria-current='page'] { @apply bg-brand-orange-hover; }
+
+  /* ---------- Badge & chip ---------- */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5
+           text-2xs font-bold uppercase tracking-[.14em] text-brand-orange shadow-card;
+  }
+  /* Chip = kontrol filter yang bisa difokus → batasnya juga butuh 3:1. */
+  .chip {
+    @apply inline-flex items-center justify-center rounded-full border border-brand-line-strong
+           bg-white text-sm font-semibold transition-all duration-200
+           hover:border-brand-orange hover:text-brand-orange;
+  }
+  .chip-active {
+    @apply border-brand-orange bg-brand-orange text-white hover:text-white;
+  }
+
+  /* ---------- Motif pita film (menggantikan .film-line inline) ---------- */
+  .film-line {
+    height: 4px;
+    background-image: repeating-linear-gradient(
+      to right,
+      currentColor 0 7px,
+      transparent 7px 13px
+    );
+  }
+  .film-line-sm { height: 3px; }
+
+  /* ---------- Judul bagian ---------- */
+  .eyebrow {
+    @apply text-2xs font-bold uppercase tracking-[.18em] text-brand-orange;
+  }
+  .section-title { @apply font-serif font-extrabold text-3xl md:text-4xl leading-tight; }
+
+  /* H1 halaman dalam aplikasi (kamera, desain, panel admin). Dipisah dari
+     .section-title karena yang latter dipakai untuk judul section marketing
+     dengan skala yang lebih kecil. */
+  .page-title { @apply font-serif font-extrabold text-3xl md:text-4xl leading-tight; }
+
+  /* H1 halaman Oriented-ke-musik: hasil, cara kerja, galeri. */
+  .app-title { @apply font-serif font-extrabold text-4xl md:text-5xl leading-tight text-balance; }
+
+  /* ---------- Link teks ---------- */
+  .link-orange {
+    @apply text-brand-orange font-semibold underline decoration-brand-orange/30
+           underline-offset-4 transition hover:decoration-brand-orange;
+  }
+
+  /* ---------- Empty state ---------- */
+  .empty-state {
+    @apply rounded-3xl border border-dashed border-brand-line bg-white/60 px-8 py-12 text-center text-brand-muted;
+  }
+}
+
+@layer utilities {
+  /* Panel gelap: gradasi HALUS + grain halus, digabung dalam SATU deklarasi
+     background-image.
+     Penting: utility `.grain` terpisah dulu menimpa gradasi ini (keduanya
+     men-set background-image), sehingga panel kehilangan latar gelap dan teks
+     putihnya jadi tak terlihat. Jangan dipecah jadi dua class. */
+  .bg-brand-panel {
+    background-color: #1c1917;
+    background-image:
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.022'/%3E%3C/svg%3E"),
+      radial-gradient(85% 130% at 6% 0%, #262220 0%, #1c1917 58%, #171513 100%);
+  }
+
+  .text-balance { text-wrap: balance; }
+
+  /* Aksen cahaya oranye — sengaja sangat tipis agar tidak terlihat "dipaksakan". */
+  .accent-haze {
+    background-image: radial-gradient(60% 60% at 50% 50%, rgba(190, 74, 28, .16) 0%, transparent 70%);
+  }
+
+  /* ---------- Safe area (notch iPhone) ---------- */
+  .safe-x { padding-left: var(--hm-safe-l); padding-right: var(--hm-safe-r); }
+  .safe-b { padding-bottom: var(--hm-safe-b); }
+
+  /* ---------- Carousel: affordance tanpa scrollbar tebal ---------- */
+  /* Gradien tepi supaya jelas ada konten yang terpotong di kedua sisi. */
+  .scroll-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
+  }
+}
+
+/* ==========================================================================
+   Photobooth — gaya khusus halaman kamera
+   Dipindahkan dari <style> inline supaya bisa dipakai bersama & ikut di-build.
+   ========================================================================== */
+
+#cameraBox {
+  transition: border-radius .25s ease;
+}
+
+#cameraBox:fullscreen {
+  aspect-ratio: auto !important;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: #000;
+}
+#cameraBox:fullscreen #webcam { width: 100%; height: 100%; }
+#cameraBox:fullscreen #countdownOverlay { font-size: clamp(6rem, 22vmin, 12rem); }
+#cameraBox:fullscreen #cameraHint { font-size: 1rem; padding: .5rem 1.25rem; }
+
+/* Overlay UI hanya muncul di mode fullscreen */
+#fsUI { display: none; }
+#cameraBox:fullscreen #fsUI { display: flex; }
+
+#fsMenuBar::-webkit-scrollbar { width: 6px; }
+#fsMenuBar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .35); border-radius: 999px; }
+
+#fsUI #fsMenuBar,
+#fsUI #btnFsShutter {
+  transition: opacity .25s ease, transform .15s ease, box-shadow .2s ease, background-color .15s ease;
+}
+#fsUI.fs-hidden-ui #fsMenuBar,
+#fsUI.fs-hidden-ui #btnFsShutter {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#fsUI .fs-chip { transition: transform .12s ease, background-color .15s ease, box-shadow .2s ease; }
+#fsUI .fs-chip:active { transform: scale(.9); }
+#fsUI .fs-chip.fs-active {
+  background: var(--hm-orange);
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 8px 18px rgba(190, 74, 28, .55);
+  transform: translateY(-2px);
+}
+
+#btnFsShutter {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .55), 0 0 0 4px rgba(255, 255, 255, .9);
+}
+#btnFsShutter:active { transform: scale(.88); }
+#btnFsShutter.fs-capturing { animation: fsPulse 1s ease-out infinite; pointer-events: none; }
+
+@keyframes fsPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(190, 74, 28, .75), 0 0 0 4px rgba(255, 255, 255, .9); }
+  70%  { box-shadow: 0 0 0 26px rgba(190, 74, 28, 0), 0 0 0 4px rgba(255, 255, 255, .9); }
+  100% { box-shadow: 0 0 0 0 rgba(190, 74, 28, 0), 0 0 0 4px rgba(255, 255, 255, .9); }
+}
+
+#captureFlash { transition: opacity .35s ease; }
+
+/* Tombol fullscreen mini: muncul saat hover, selalu tampil di layar sentuh.
+   WAJIB juga saat fokus — kalau hanya hover, pengguna keyboard akan me-tab ke
+   kontrol yang opacity 0 (tidak terlihat) → melanggar WCAG 2.4.7. */
+#fsToggleMini { opacity: 0; transition: opacity .18s ease; }
+#cameraBox:hover #fsToggleMini,
+#fsToggleMini:focus-visible { opacity: 1; }
+@media (hover: none) { #fsToggleMini { opacity: 1; } }
+#cameraBox:fullscreen #fsToggleMini { display: none; }
+
+#fsExitBtn { display: none; }
+#cameraBox:fullscreen #fsExitBtn { display: flex; }
+
+/* Modal biodata */
+#biodataModal { animation: fadeIn .3s ease both; }
+#biodataForm { animation: popIn .35s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(14px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Tombol tool rail di sidebar kamera */
+.tool-btn { color: #66604f; }
+.tool-btn:hover { background: #efeae1; color: #be4a1c; }
+.tool-btn.is-open { background: #17140f; color: #fff; }
+.tool-btn.is-open .tool-val { opacity: .75; }
+
+/* Kartu strip / filter / timer yang dibangun dari JS */
+.strip-card.is-active, .f-item.is-active, .t-pill.is-active { border-color: #be4a1c; }
+.t-pill.is-active { background: #be4a1c; color: #fff; }
+
+/* Step bar di panel preview */
+.step-node {
+  @apply flex-1 h-1.5 rounded-full bg-brand-line transition-colors duration-300;
+}
+.step-node-done { @apply bg-brand-orange; }
+.step-node-active { @apply bg-brand-orange/40; }
+
+/* Galeri: snap & scrollbar halus */
+.snap-row {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.snap-row::-webkit-scrollbar { display: none; }
+
+/* Petunjuk "geser" hanya relevan di layar sentuh — di desktop sudah ada panah. */
+.snap-hint { display: none; }
+@media (max-width: 767px) { .snap-hint { display: flex; } }
+
+/* ---------- State aktif tombol aksi kamera ----------
+   Tombol lama pakai `transition` polos tanpa state active, jadi tidak terasa
+   "ditekan" di layar sentuh. Ditambahkan scale + sheen saat memproses. */
+#btnCapture, #btnRetakeOne, #btnRetakeAll,
+#mirrorToggle, #btnNext, #btnSave {
+  transition: transform .12s ease-out, background-color .2s ease,
+              border-color .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+#btnCapture:active:not(:disabled),
+#btnRetakeOne:active, #btnRetakeAll:active,
+#mirrorToggle:active, #btnNext:active:not(:disabled) { transform: scale(.97); }
+
+#btnCapture:not(:disabled) { position: relative; overflow: hidden; }
+#btnCapture.is-busy { pointer-events: none; }
+#btnCapture.is-busy::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.38), transparent);
+  animation: sheen 1.2s ease-in-out infinite;
+}
+@keyframes sheen { to { transform: translateX(100%); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Skeleton loading ----------
+   Diganti konten yang belum siap (template, statistik, foto). Harmonikan
+   warna dengan palet brand agar tidak terasa "dipaksa". */
+.skeleton {
+  @apply bg-brand-card-light rounded animate-pulse;
+}
+.skeleton-text { @apply h-4 mb-2 rounded; }
+.skeleton-title { @apply h-6 mb-4 rounded w-3/4; }
+.skeleton-avatar { @apply h-12 w-12 rounded-full; }
+
+/* ---------- Toast notifikasi terpusat ----------
+   Muncul dari bawah kanan, auto-hilang, hormati reduced-motion. */
+#toastContainer {
+  @apply fixed bottom-6 right-6 z-[60] flex flex-col gap-2 pointer-events-none;
+}
+.toast {
+  @apply pointer-events-auto flex items-center gap-3 rounded-2xl bg-white px-4 py-3
+         shadow-lift ring-1 ring-black/[.05] border border-brand-line
+         transition-all duration-300 ease-out translate-y-20 opacity-0
+         max-w-xs sm:max-w-sm;
+}
+.toast.show {
+  @apply translate-y-0 opacity-100;
+}
+.toast.success { @apply border-l-4 border-brand-orange; }
+.toast.error   { @apply border-l-4 border-red-500; }
+.toast.info    { @apply border-l-4 border-brand-orange; }
+.toast-icon { @apply shrink-0 h-6 w-6 rounded-full flex items-center justify-center; }
+.toast-icon.success { @apply bg-brand-orange text-white; }
+.toast-icon.error   { @apply bg-red-500 text-white; }
+.toast-icon.info    { @apply bg-brand-orange text-white; }
+.toast-body { @apply flex-1 min-w-0; }
+.toast-title { @apply text-sm font-bold text-brand-text; }
+.toast-desc  { @apply text-xs text-brand-muted leading-snug; }
+
+/* ---------- Tabel admin modern ----------
+   Zebra striping, hover row, dan state aktif untuk memudahkan_scan. */
+.admin-table { @apply w-full text-sm min-w-full; }
+.admin-table thead th {
+  @apply text-left text-brand-muted border-b border-brand-line py-3 pr-4 font-semibold uppercase tracking-[.12em] text-[11px];
+}
+.admin-table tbody tr {
+  @apply border-b border-brand-line/60 last:border-0 transition-colors duration-150;
+}
+.admin-table tbody tr:hover { @apply bg-brand-card-light/40; }
+.admin-table tbody tr:focus-within { @apply bg-brand-orange/10 outline-none ring-2 ring-brand-orange ring-offset-2; }
+.admin-table td { @apply py-4 pr-4 align-top; }
+.admin-table td.preview-cell { @apply py-2; }
+
+/* ---------- Badge status ----------
+   Kombinasi warna yang lolos kontras untuk label status kecil. */
+.badge-ok   { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[.14em] bg-brand-orange/10 text-brand-orange-ink; }
+.badge-new  { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[.14em] bg-brand-orange text-white; }
+
+/* ---------- Kartu interaktif (hover lift + border) ----------
+   Diganti .card-card pada daftar template & galeri. */
+.card-interact {
+  @apply card card-hover cursor-pointer;
+}
+.card-interact:hover { @apply ring-brand-orange/20; }
+
+/* ---------- Page transition ----------
+   Halaman baru muncul dengan fade + geser kecil ke atas. Digunakan bersama
+   Turbolinks-like navigation atau sekadar membuat navigasi terasa halus. */
+.page-enter {
+  @apply opacity-0 translate-y-4;
+  transition: opacity .3s ease-out, transform .3s ease-out;
+}
+.page-enter-active {
+  @apply opacity-100 translate-y-0;
+}
+
+/* ---------- Back-to-top ----------
+   Muncul saat scroll > 400px, halus di sudut kanan bawah. */
+#backToTop {
+  @apply fixed bottom-6 right-6 z-[50] rounded-full bg-brand-dark text-white
+         p-3 shadow-lift transition-all duration-300 ease-out
+         translate-y-20 opacity-0 pointer-events-none;
+}
+#backToTop.show { @apply translate-y-0 opacity-100 pointer-events-auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  #btnCapture.is-busy::after { animation: none !important; }
+  .skeleton { animation: none !important; }
+  .toast { transition: none !important; }
+}
+
+/* ==========================================================================
+   Print — untuk tombol "Cetak Strip" di halaman hasil
+   ========================================================================== */
+@media print {
+  header, footer, nav, .no-print { display: none !important; }
+  body { background: #fff !important; }
+  main { padding: 0 !important; }
+  .print-area {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .print-area img { max-height: 100vh; max-width: 100%; box-shadow: none !important; }
 }

@@ -3,36 +3,46 @@
 @section('title', "Pilih Desain — HOLD' MOMENT")
 
 @section('content')
-<section class="max-w-6xl mx-auto px-6 pt-10 pb-14">
-    <h1 class="font-serif font-extrabold text-3xl md:text-4xl">Pilih Desain Strip</h1>
+<section class="safe-x max-w-6xl mx-auto px-6 pt-10 pb-14 page-enter">
+    <h1 class="page-title">Pilih Desain Strip</h1>
     <p class="text-brand-muted mt-2 text-sm">Foto sudah lengkap — tinggal pilih desain favoritmu, lalu simpan.</p>
 
-    <div class="flex items-center gap-2 text-[11px] font-bold mt-6" id="stepBarDesain"></div>
+    <div class="flex items-center gap-2 text-[11px] font-bold mt-6" id="stepBarDesain" role="list" aria-label="Tahap pembuatan photostrip"></div>
 
     <div class="mt-6 grid lg:grid-cols-[1fr_320px] gap-6 items-start">
-        {{-- Kiri: preview + simpan --}}
-        <div class="bg-white rounded-3xl p-6 shadow-sm lg:sticky lg:top-4">
+        {{-- Kiri: preview + simpan.
+             lg:top-24 (bukan top-4) karena navbar sticky ~81px — dengan top-4
+             bagian atas panel ini tertutup navbar. --}}
+        <div class="card p-6 lg:sticky lg:top-24">
             <div class="flex items-center justify-between">
                 <p class="font-bold text-sm">Strip Preview</p>
                 <span id="previewLayoutBadge" class="text-xs font-bold bg-brand-orange text-white rounded-full px-3 py-1"></span>
             </div>
             <p id="previewDesignLabel" class="mt-1 text-xs text-brand-muted">Desain: Polos</p>
             <canvas id="stripPreview" class="mt-4 w-full max-w-[420px] mx-auto rounded-2xl border border-black/10"></canvas>
-            <p id="saveError" class="hidden mt-3 text-sm text-red-600"></p>
+            <p id="saveError" class="hidden mt-3 text-sm text-red-700" role="alert"></p>
             <div class="mt-4 flex flex-wrap gap-3">
-                <a href="{{ route('camera') }}" class="inline-flex items-center gap-2 border border-gray-400 text-gray-700 rounded-full px-6 py-3 hover:bg-gray-100 transition font-semibold text-sm"><x-icon name="arrow-left" class="w-4 h-4" /> Ganti Foto</a>
-                <button id="btnSave" class="flex-1 min-w-52 bg-brand-orange text-white rounded-full py-3 font-semibold hover:bg-brand-orange-hover transition">Simpan &amp; Lihat Hasil</button>
+                <a href="{{ route('camera') }}" class="btn btn-outline btn-md font-semibold">
+                    <x-icon name="arrow-left" class="h-4 w-4" /> Ganti Foto
+                </a>
+                <button id="btnSave" type="button" class="btn btn-primary btn-md flex-1 min-w-52">
+                    Simpan &amp; Lihat Hasil
+                </button>
             </div>
         </div>
 
-        {{-- Kanan: daftar desain (difilter sesuai jumlah foto) --}}
-        <aside class="bg-white rounded-3xl p-6 shadow-sm">
+        {{-- Kanan: daftar desain (difilter sesuai jumlah foto).
+             role=radiogroup supaya state terpilih bisa dibacakan AT; sebelum
+             ini pemilihan hanya terlihat lewat warna/centang. --}}
+        <aside class="card p-6">
             <div class="flex items-center justify-between mb-3">
                 <p class="font-bold text-sm">Desain Strip</p>
                 <span id="designCountDesain" class="text-xs text-brand-muted"></span>
             </div>
-            <div class="grid grid-cols-2 gap-3 max-h-[32rem] overflow-y-auto pr-1" id="designListDesain">
-                <button data-template="" class="design-card relative rounded-xl border border-brand-orange bg-brand-orange/10 overflow-hidden text-left hover:border-brand-orange transition">
+            <div class="grid grid-cols-2 gap-3 max-h-[32rem] overflow-y-auto pr-1"
+                 id="designListDesain" role="radiogroup" aria-label="Pilih desain strip">
+                <button data-template="" role="radio" aria-checked="true"
+                    class="design-card relative rounded-xl border border-brand-orange bg-brand-orange/10 overflow-hidden text-left transition hover:shadow-card">
                     <span class="tick absolute top-2 right-2 w-6 h-6 rounded-full bg-brand-orange text-white flex items-center justify-center shadow"><x-icon name="check" class="w-3.5 h-3.5" /></span>
                     <span class="block h-28 bg-brand-card-light flex items-center justify-center text-brand-muted text-2xl font-bold">—</span>
                     <span class="block p-2.5 bg-white">
@@ -40,7 +50,8 @@
                         <span class="block text-[11px] text-brand-muted">Cream bawaan</span>
                     </span>
                 </button>
-                <button data-template="receipt" data-variant="receipt" class="design-card relative rounded-xl border border-gray-300 overflow-hidden text-left hover:border-brand-orange transition">
+                <button data-template="receipt" data-variant="receipt" role="radio" aria-checked="false"
+                       class="design-card relative rounded-xl border border-brand-line-strong overflow-hidden text-left transition hover:border-brand-orange/50 hover:shadow-card">
                     <span class="tick hidden absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-brand-orange text-white flex items-center justify-center shadow"><x-icon name="check" class="w-3.5 h-3.5" /></span>
                     <span class="block h-28 bg-white border-b border-black/10 flex flex-col items-center justify-center gap-[3px] px-8">
                         <span class="w-full h-[2px] bg-black/80"></span>
@@ -53,7 +64,8 @@
                         <span class="block text-[11px] text-brand-muted">2 strip kembar • 4 foto</span>
                     </span>
                 </button>
-                <button data-template="receipt" data-variant="receipt_2x3" class="design-card relative rounded-xl border border-gray-300 overflow-hidden text-left hover:border-brand-orange transition">
+                <button data-template="receipt" data-variant="receipt_2x3" role="radio" aria-checked="false"
+                       class="design-card relative rounded-xl border border-brand-line-strong overflow-hidden text-left transition hover:border-brand-orange/50 hover:shadow-card">
                     <span class="tick hidden absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-brand-orange text-white flex items-center justify-center shadow"><x-icon name="check" class="w-3.5 h-3.5" /></span>
                     <span class="block h-28 bg-white border-b border-black/10 flex flex-col items-center justify-center gap-[3px] px-8">
                         <span class="w-full h-[2px] bg-black/80"></span>
@@ -67,7 +79,8 @@
                     </span>
                 </button>
                 @forelse($templates as $t)
-                    <button data-template="{{ $t->id }}" data-layout="{{ $t->layout_type }}" class="design-card relative rounded-xl border border-gray-300 overflow-hidden text-left hover:border-brand-orange transition">
+                    <button data-template="{{ $t->id }}" data-layout="{{ $t->layout_type }}" role="radio" aria-checked="false"
+                       class="design-card relative rounded-xl border border-brand-line-strong overflow-hidden text-left transition hover:border-brand-orange/50 hover:shadow-card">
                         <span class="tick hidden absolute top-2 right-2 w-6 h-6 rounded-full bg-brand-orange text-white flex items-center justify-center shadow"><x-icon name="check" class="w-3.5 h-3.5" /></span>
                         @if($t->background_image)
                             <img src="{{ asset('storage/' . $t->background_image) }}" alt="{{ $t->name }}" class="block h-28 w-full object-cover bg-brand-card-light" onerror="this.style.visibility='hidden'">
@@ -108,7 +121,6 @@
     const previewDesignLabel = document.getElementById('previewDesignLabel');
     const designCountDesain = document.getElementById('designCountDesain');
     const btnSave = document.getElementById('btnSave');
-    const errBox = document.getElementById('saveError');
 
     const state = {
         visitor: stash.visitor,
@@ -150,10 +162,24 @@
             const on = x === btn;
             x.classList.toggle('border-brand-orange', on);
             x.classList.toggle('bg-brand-orange/10', on);
-            x.classList.toggle('border-gray-300', !on);
+            x.classList.toggle('border-brand-line-strong', !on);
+            // State terpilih harus bisa dibaca AT, bukan hanya dilihat.
+            x.setAttribute('aria-checked', on ? 'true' : 'false');
+            x.setAttribute('tabindex', on ? '0' : '-1');
             x.querySelectorAll('.tick').forEach(t => t.classList.toggle('hidden', !on));
         });
     }
+
+    // Navigasi panah di dalam radiogroup (pola WAI-ARIA untuk radio group).
+    document.getElementById('designListDesain').addEventListener('keydown', (e) => {
+        if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
+        const cards = [...document.querySelectorAll('.design-card')].filter(c => !c.classList.contains('hidden'));
+        const i = cards.indexOf(document.activeElement);
+        if (i < 0) return;
+        e.preventDefault();
+        const step = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+        cards[(i + step + cards.length) % cards.length].focus();
+    });
 
     function paintStepsDesain() {
         const bar = document.getElementById('stepBarDesain');
@@ -163,12 +189,15 @@
         let html = '';
         steps.forEach((st, i) => {
             const lit = st[2];
-            html += '<span class="flex items-center gap-1.5' + (lit ? '' : ' opacity-40') + '">'
-                + '<span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold '
+            // Status tahap dibacakan lewat aria-label, bukan hanya lewat warna.
+            const status = lit ? 'selesai' : 'belum selesai';
+            html += '<span role="listitem" class="flex items-center gap-1.5' + (lit ? '' : ' opacity-40') + '"'
+                + ' aria-label="Tahap ' + st[0] + ', ' + st[1] + ': ' + status + '">'
+                + '<span aria-hidden="true" class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold '
                 + (lit ? 'bg-brand-orange text-white' : 'bg-brand-card-light text-brand-muted') + '">'
                 + (st[0] === 3 && !lit ? st[0] : (lit ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' : st[0])) + '</span>'
-                + '<span class="' + (lit ? 'text-brand-text' : 'text-brand-muted') + '">' + st[1] + '</span></span>';
-            if (i < steps.length - 1) html += '<span class="flex-1 h-[2px] rounded ' + (lit ? 'bg-brand-orange' : 'bg-black/10') + '"></span>';
+                + '<span aria-hidden="true" class="' + (lit ? 'text-brand-text' : 'text-brand-muted') + '">' + st[1] + '</span></span>';
+            if (i < steps.length - 1) html += '<span aria-hidden="true" class="flex-1 h-[2px] rounded ' + (lit ? 'bg-brand-orange' : 'bg-black/10') + '"></span>';
         });
         bar.innerHTML = html;
     }
@@ -206,11 +235,21 @@
         renderDesain();
     }));
 
+    // Label tombol asli disimpan supaya bisa dikembalikan persis seperti semula
+    // (spinner + teks) tanpa kehilangan ikon apa pun.
+    const SAVE_IDLE = btnSave.innerHTML;
+    const SPINNER = '<svg class="h-4 w-4 animate-hm-spin shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+        + '<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" opacity=".25"/>'
+        + '<path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
+
     btnSave.addEventListener('click', async () => {
         if (state.busy) return;
         state.busy = true;
-        btnSave.textContent = 'Menyimpan...';
-        errBox.classList.add('hidden');
+        // Tombol harus benar-benar nonaktif selama proses; sebelumnya hanya
+        // dijaga flag `busy`, jadi masih tampak bisa diklik.
+        btnSave.disabled = true;
+        btnSave.setAttribute('aria-busy', 'true');
+        btnSave.innerHTML = SPINNER + ' Menyimpan…';
         try {
             const image = await fullResStrip();
             if (image.length > 4 * 1024 * 1024) throw new Error('Gambar kebesaran, coba lagi.');
@@ -232,13 +271,16 @@
             try { data = JSON.parse(text); } catch { throw new Error('Server error (' + res.status + '): ' + text.slice(0, 300)); }
             if (!res.ok) throw new Error(data.message || 'Gagal menyimpan (' + res.status + ')');
             try { sessionStorage.removeItem('holdmoment_stash'); } catch (e) {}
+            window.toast('Foto berhasil disimpan', 'success');
             window.location.href = data.redirect;
         } catch (e) {
             console.error(e);
-            errBox.textContent = e.message.includes('Failed to fetch') ? 'Gagal terhubung ke server. Cek koneksi / coba lagi. Detail: ' + e.message : e.message;
-            errBox.classList.remove('hidden');
+            window.toast(e.message.includes('Failed to fetch') ? 'Gagal terhubung ke server. Cek koneksi / coba lagi.' : e.message, 'error');
             state.busy = false;
-            btnSave.textContent = 'Simpan & Lihat Hasil';
+            btnSave.disabled = false;
+            btnSave.removeAttribute('aria-busy');
+            btnSave.innerHTML = SAVE_IDLE;
+            btnSave.focus();
         }
     });
 

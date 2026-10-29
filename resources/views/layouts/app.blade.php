@@ -14,39 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS via CDN (langsung jalan tanpa build) + konfigurasi brand -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-bg': '#F6F4EE',
-                        'brand-orange': '#D95B32',
-                        'brand-orange-hover': '#C44E27',
-                        'brand-dark': '#1C1C1C',
-                        'brand-card-light': '#EFECE6',
-                        'brand-text': '#1A1A1A',
-                        'brand-muted': '#737373',
-                    },
-                    fontFamily: {
-                        serif: ['"Playfair Display"', 'Georgia', 'serif'],
-                        sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    {{-- Tailwind CSS + Alpine.js di-build lewat Vite (resources/css/app.css & resources/js/app.js) --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- Untuk production: jalankan npm run build lalu uncomment baris vite di bawah --}}
-    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
-
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <style>
-        body { font-family: 'Plus Jakarta Sans', Inter, sans-serif; }
-        .film-line { background-image: repeating-linear-gradient(to right, currentColor 0 8px, transparent 8px 14px); height: 3px; }
-    </style>
     @stack('styles')
 </head>
 <body class="bg-brand-bg text-brand-text font-sans antialiased min-h-screen">
